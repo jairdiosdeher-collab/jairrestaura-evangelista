@@ -39,6 +39,20 @@ async function startServer() {
   const app = express();
   app.disable('x-powered-by');
   app.use(express.json({ limit: '512kb' }));
+  app.use((err: unknown, _req: Request, res: Response, next: NextFunction) => {
+    if (err && typeof err === 'object' && 'type' in err) {
+      const errType = (err as { type?: string }).type;
+      if (errType === 'entity.parse.failed') {
+        res.status(400).json({ error: 'El formato de la solicitud no es válido (JSON incorrecto).' });
+        return;
+      }
+      if (errType === 'entity.too.large') {
+        res.status(400).json({ error: 'La solicitud supera el límite permitido (512 KB).' });
+        return;
+      }
+    }
+    next(err);
+  });
 
   const aiLimiter = createAiRateLimiter(25, 60_000);
 

@@ -1,13 +1,17 @@
 import type { ServerResponse } from 'http';
+import { ThinkingLevel } from '@google/genai';
 import {
+  GEMINI_MODEL,
   SYSTEM_INSTRUCTION,
   buildChatContents,
+  enforceServerlessRateLimit,
   getGeminiClient,
   mapGeminiError,
   readJsonBody,
   sanitizeText,
   sendJson,
   setSecurityHeaders,
+  withTransientRetry,
   type RequestWithBody,
 } from './_lib/gemini.js';
 
@@ -16,6 +20,10 @@ export default async function handler(req: RequestWithBody, res: ServerResponse)
 
   if (req.method !== 'POST') {
     sendJson(res, 405, { error: 'Método no permitido.' });
+    return;
+  }
+
+  if (!enforceServerlessRateLimit(req, res, 'chat', 12, 60_000)) {
     return;
   }
 
@@ -28,6 +36,13 @@ export default async function handler(req: RequestWithBody, res: ServerResponse)
 
     if (!Array.isArray(messages) || messages.length === 0) {
       sendJson(res, 400, { error: 'Se requiere al menos un mensaje para conversar.' });
+      return;
+    }
+
+    if (messages.length > 40) {
+      sendJson(res, 400, {
+        error: 'El historial enviado es demasiado extenso. Inicia una nueva conversación para continuar.',
+      });
       return;
     }
 
@@ -66,13 +81,16 @@ export default async function handler(req: RequestWithBody, res: ServerResponse)
         ? `${SYSTEM_INSTRUCTION}\n\nCONTEXTO ACTUAL DE LA SESIÓN:\n${contextNotes.join('\n')}`
         : SYSTEM_INSTRUCTION;
 
-    const stream = await ai.models.generateContentStream({
-      model: 'gemini-4-hydrogen',
-      contents,
-      config: {
-        systemInstruction: fullSystemInstruction,
-      },
-    });
+    const stream = await withTransientRetry(() =>
+      ai.models.generateContentStream({
+        model: GEMINI_MODEL,
+        contents,
+        config: {
+          systemInstruction: fullSystemInstruction,
+          thinkingConfig: { thinkingLevel: ThinkingLevel.LOW },
+        },
+      })
+    );
 
     res.statusCode = 200;
     res.setHeader('Content-Type', 'text/event-stream; charset=utf-8');
@@ -80,19 +98,22 @@ export default async function handler(req: RequestWithBody, res: ServerResponse)
     res.setHeader('Connection', 'keep-alive');
 
     for await (const chunk of stream) {
+      if (res.writableEnded || res.destroyed) break;
       const text = chunk.text;
       if (text) {
         res.write(`data: ${JSON.stringify({ text })}\n\n`);
       }
     }
 
-    res.write(`data: ${JSON.stringify({ done: true })}\n\n`);
-    res.end();
+    if (!res.writableEnded && !res.destroyed) {
+      res.write(`data: ${JSON.stringify({ done: true })}\n\n`);
+      res.end();
+    }
   } catch (error) {
     const mapped = mapGeminiError(error);
     if (!res.headersSent) {
       sendJson(res, mapped.status, { error: mapped.message });
-    } else {
+    } else if (!res.writableEnded && !res.destroyed) {
       res.write(`data: ${JSON.stringify({ error: mapped.message })}\n\n`);
       res.end();
     }

@@ -1,12 +1,16 @@
 import type { ServerResponse } from 'http';
+import { ThinkingLevel } from '@google/genai';
 import {
+  GEMINI_MODEL,
   SYSTEM_INSTRUCTION,
+  enforceServerlessRateLimit,
   getGeminiClient,
   mapGeminiError,
   readJsonBody,
   sanitizeText,
   sendJson,
   setSecurityHeaders,
+  withTransientRetry,
   type RequestWithBody,
 } from './_lib/gemini.js';
 
@@ -15,6 +19,10 @@ export default async function handler(req: RequestWithBody, res: ServerResponse)
 
   if (req.method !== 'POST') {
     sendJson(res, 405, { error: 'Método no permitido.' });
+    return;
+  }
+
+  if (!enforceServerlessRateLimit(req, res, 'prayer-encouragement', 8, 60_000)) {
     return;
   }
 
@@ -39,13 +47,16 @@ Bríndale una breve palabra de aliento pastoral (máximo 180 palabras) que inclu
 3. Una breve oración modelo que la persona pueda hacer delante de Dios.
 4. Recordarle con suavidad que, si desea oración personal con el Pastor Jair, puede usar el botón de WhatsApp.`;
 
-    const response = await ai.models.generateContent({
-      model: 'gemini-4-hydrogen',
-      contents: prompt,
-      config: {
-        systemInstruction: SYSTEM_INSTRUCTION,
-      },
-    });
+    const response = await withTransientRetry(() =>
+      ai.models.generateContent({
+        model: GEMINI_MODEL,
+        contents: prompt,
+        config: {
+          systemInstruction: SYSTEM_INSTRUCTION,
+          thinkingConfig: { thinkingLevel: ThinkingLevel.LOW },
+        },
+      })
+    );
 
     const encouragement = response.text?.trim();
     if (!encouragement) {

@@ -156,10 +156,29 @@ export default function EvangelistChatView({
   const [showPastorPromptCard, setShowPastorPromptCard] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const lastHandledPromptRef = useRef<string | null>(null);
+  const cooldownUntilRef = useRef<number>(0);
 
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [messages, isStreaming]);
+
+  const formatHttpError = (status: number, serverMessage?: string): string => {
+    if (serverMessage && serverMessage.trim()) return serverMessage.trim();
+    switch (status) {
+      case 400:
+        return 'La consulta no pudo procesarse por formato inválido o extensión excesiva (400).';
+      case 401:
+        return 'La clave de API configurada en el servidor no fue autorizada (401).';
+      case 403:
+        return 'Acceso denegado por permisos del servicio de IA en el servidor (403).';
+      case 429:
+        return 'Se alcanzó temporalmente el límite de consultas (429). Espera unos segundos antes de volver a intentar.';
+      case 503:
+        return 'El asistente de IA no está disponible temporalmente porque falta configurar GEMINI_API_KEY en el servidor o el servicio está en mantenimiento.';
+      default:
+        return 'No se pudo obtener respuesta del asistente.';
+    }
+  };
 
   const sendMessage = async (
     textToSend: string,
@@ -168,6 +187,15 @@ export default function EvangelistChatView({
   ) => {
     const trimmed = textToSend.trim();
     if (!trimmed || isStreaming) return;
+
+    const now = Date.now();
+    if (now < cooldownUntilRef.current) {
+      const waitSec = Math.ceil((cooldownUntilRef.current - now) / 1000);
+      setErrorMsg(
+        `Por favor espera ${waitSec} ${waitSec === 1 ? 'segundo' : 'segundos'} antes de enviar otra consulta para cuidar la disponibilidad gratuita del asistente.`
+      );
+      return;
+    }
 
     if (highlightPastor) {
       setShowPastorPromptCard(true);
@@ -207,8 +235,15 @@ export default function EvangelistChatView({
 
       if (!response.ok) {
         const errData = (await response.json().catch(() => ({}))) as { error?: string };
-        throw new Error(errData.error || 'No se pudo obtener respuesta del asistente.');
+        if (response.status === 429) {
+          const retryHeader = Number(response.headers.get('Retry-After'));
+          const waitMs = Number.isFinite(retryHeader) && retryHeader > 0 ? retryHeader * 1000 : 10_000;
+          cooldownUntilRef.current = Date.now() + waitMs;
+        }
+        throw new Error(formatHttpError(response.status, errData.error));
       }
+
+      cooldownUntilRef.current = Date.now() + 1500;
 
       const reader = response.body?.getReader();
       if (!reader) {

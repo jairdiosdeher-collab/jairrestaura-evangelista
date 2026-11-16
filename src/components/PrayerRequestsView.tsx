@@ -94,9 +94,22 @@ export default function PrayerRequestsView() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ category: item.category, requestText: item.text }),
       });
-      const data = (await res.json()) as { encouragement?: string; error?: string };
+      const data = (await res.json().catch(() => ({}))) as {
+        encouragement?: string;
+        error?: string;
+      };
       if (!res.ok || !data.encouragement) {
-        throw new Error(data.error || 'No se pudo generar la palabra de aliento.');
+        const fallback =
+          res.status === 503
+            ? 'El asistente de IA no está disponible temporalmente porque falta configurar GEMINI_API_KEY en el servidor.'
+            : res.status === 429
+            ? 'Se alcanzó temporalmente la cuota de consultas (429). Espera unos momentos antes de intentar de nuevo.'
+            : res.status === 401 || res.status === 403
+            ? 'El servicio de IA no pudo validar la clave o los permisos configurados en el servidor.'
+            : res.status === 400
+            ? 'La petición enviada no es válida para generar la palabra de aliento.'
+            : 'No se pudo generar la palabra de aliento.';
+        throw new Error(data.error || fallback);
       }
 
       savePrayers(
