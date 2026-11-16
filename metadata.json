@@ -1,0 +1,6 @@
+{
+  "name": "JAIRRESTAURA – EVANGELISTA",
+  "description": "Plataforma pública y gratuita de evangelización cristiana, escuela bíblica por niveles, discipulado inteligente de 90 días, biblioteca de recursos, oración y acompañamiento pastoral.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
