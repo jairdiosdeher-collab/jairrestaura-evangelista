@@ -21,7 +21,7 @@ export default function WhatsAppButton() {
         target="_blank"
         rel="noopener noreferrer"
         aria-label="Hablar con el Pastor Jair por WhatsApp"
-        className="group inline-flex items-center gap-2.5 bg-[#0F7B43] hover:bg-[#0B6335] text-white font-semibold text-xs sm:text-sm px-4 py-2.5 sm:px-5 sm:py-3 rounded-full shadow-lg border border-[#25D366]/40 transition-transform duration-150 hover:-translate-y-0.5 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#0F7B43]"
+        className="group inline-flex items-center gap-2.5 bg-[var(--wa-bg)] hover:bg-[var(--wa-bg-hover)] text-white font-semibold text-xs sm:text-sm px-4 py-2.5 sm:px-5 sm:py-3 rounded-full shadow-lg dark:shadow-black/50 border border-[#25D366]/45 transition-transform duration-150 hover:-translate-y-0.5 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--wa-text)]"
       >
         <span className="inline-flex items-center justify-center w-6 h-6 rounded-full bg-[#25D366] text-[#052E16] shrink-0">
           <WhatsAppOfficialIcon className="w-4 h-4" />

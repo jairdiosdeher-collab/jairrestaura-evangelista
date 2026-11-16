@@ -1,15 +1,78 @@
 @import "tailwindcss";
 
+@custom-variant dark (&:where(.dark, .dark *));
+
 @theme {
   --font-serif: "Fraunces", Georgia, "Times New Roman", serif;
   --font-sans: "Plus Jakarta Sans", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
 }
 
+:root {
+  color-scheme: light;
+  --bg-page: #FAF9F6;
+  --bg-surface: #FFFFFF;
+  --bg-subtle: #F3F1EC;
+  --bg-muted: #EFECE6;
+  --bg-input: #FAF9F6;
+  --bg-header: rgba(250, 249, 246, 0.95);
+  --text-primary: #1C1B18;
+  --text-secondary: #44403C;
+  --text-muted: #57534E;
+  --text-placeholder: #78716C;
+  --border-default: #E5E2DC;
+  --border-subtle: #EFECE6;
+  --border-input: #D6D3CD;
+  --brand-primary: #1E3A8A;
+  --brand-primary-hover: #172D6B;
+  --brand-accent: #1E3A8A;
+  --brand-soft: rgba(30, 58, 138, 0.08);
+  --wa-bg: #0F7B43;
+  --wa-bg-hover: #0B6335;
+  --wa-text: #0F7B43;
+  --wa-soft-bg: rgba(15, 123, 67, 0.10);
+  --wa-soft-text: #0B6335;
+  --wa-soft-border: rgba(15, 123, 67, 0.40);
+  --danger-bg: #FEF2F2;
+  --danger-border: rgba(185, 28, 28, 0.35);
+  --danger-text: #991B1B;
+}
+
+.dark {
+  color-scheme: dark;
+  --bg-page: #0F141E;
+  --bg-surface: #171E2C;
+  --bg-subtle: #1C2536;
+  --bg-muted: #222C40;
+  --bg-input: #111824;
+  --bg-header: rgba(15, 20, 30, 0.94);
+  --text-primary: #F3F4F6;
+  --text-secondary: #CBD5E1;
+  --text-muted: #94A3B8;
+  --text-placeholder: #64748B;
+  --border-default: #283348;
+  --border-subtle: #20293B;
+  --border-input: #364460;
+  --brand-primary: #2563EB;
+  --brand-primary-hover: #1D4ED8;
+  --brand-accent: #7DA8FF;
+  --brand-soft: rgba(125, 168, 255, 0.14);
+  --wa-bg: #15803D;
+  --wa-bg-hover: #166534;
+  --wa-text: #4ADE80;
+  --wa-soft-bg: rgba(74, 222, 128, 0.12);
+  --wa-soft-text: #6EE7B7;
+  --wa-soft-border: rgba(74, 222, 128, 0.40);
+  --danger-bg: rgba(127, 29, 29, 0.28);
+  --danger-border: rgba(248, 113, 113, 0.45);
+  --danger-text: #FCA5A5;
+}
+
 @layer base {
   body {
     font-family: var(--font-sans);
-    background-color: #FAF9F6;
-    color: #1C1B18;
+    background-color: var(--bg-page);
+    color: var(--text-primary);
+    transition: background-color 150ms ease, color 150ms ease;
   }
 
   h1, h2, h3, .font-serif {

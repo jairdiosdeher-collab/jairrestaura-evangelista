@@ -124,22 +124,22 @@ export default function BibleSchoolView({
 
   return (
     <div className="max-w-6xl mx-auto px-4 sm:px-6 pt-8 sm:pt-10 pb-8 space-y-8">
-      <div className="flex flex-col md:flex-row md:items-end justify-between gap-4 pb-6 border-b border-[#E5E2DC]">
+      <div className="flex flex-col md:flex-row md:items-end justify-between gap-4 pb-6 border-b border-[var(--border-default)]">
         <div>
-          <p className="text-xs font-medium text-[#57534E]">
+          <p className="text-xs font-medium text-[var(--text-muted)]">
             Enseñanza sistemática y recursos gratuitos · Sin registro obligatorio
           </p>
-          <h1 className="mt-1 font-serif text-3xl font-semibold text-[#1C1B18]">
+          <h1 className="mt-1 font-serif text-3xl font-semibold text-[var(--text-primary)]">
             {activeTab === 'escuela'
               ? 'Escuela Bíblica Avanzada'
               : 'Biblioteca de Recursos Cristianos'}
           </h1>
-          <p className="mt-2 text-sm text-[#44403C] max-w-2xl">
+          <p className="mt-2 text-sm text-[var(--text-secondary)] max-w-2xl">
             {activeTab === 'escuela'
               ? 'Seis niveles progresivos con fundamentos evangélicos, trinitarios y pentecostales, ejemplos cotidianos y evaluación interactiva.'
               : 'Estudios bíblicos, devocionales, planes de lectura y guías prácticas basadas en referencias directas a las Sagradas Escrituras.'}
           </p>
-          <p className="mt-1.5 text-xs text-[#57534E] max-w-2xl">
+          <p className="mt-1.5 text-xs text-[var(--text-muted)] max-w-2xl">
             Tu avance y notas personales se guardan localmente en este navegador (sin registro ni envío a servidores); pueden perderse si limpias los datos del navegador o cambias de dispositivo.
           </p>
         </div>
@@ -147,7 +147,7 @@ export default function BibleSchoolView({
         <div
           role="tablist"
           aria-label="Secciones de estudio"
-          className="inline-flex items-center gap-1 p-1 bg-[#EFECE6] rounded-xl self-start md:self-auto shrink-0"
+          className="inline-flex items-center gap-1 p-1 bg-[var(--bg-muted)] rounded-xl self-start md:self-auto shrink-0"
         >
           <button
             type="button"
@@ -156,8 +156,8 @@ export default function BibleSchoolView({
             onClick={() => setActiveTab('escuela')}
             className={`inline-flex items-center gap-2 px-4 py-2 rounded-lg text-xs sm:text-sm font-medium transition-colors whitespace-nowrap shrink-0 cursor-pointer ${
               activeTab === 'escuela'
-                ? 'bg-white text-[#1E3A8A] font-semibold shadow-sm'
-                : 'text-[#44403C] hover:text-[#1C1B18]'
+                ? 'bg-[var(--bg-surface)] text-[var(--brand-accent)] font-semibold shadow-sm'
+                : 'text-[var(--text-secondary)] hover:text-[var(--text-primary)]'
             }`}
           >
             <GraduationCap className="w-4 h-4" />
@@ -170,8 +170,8 @@ export default function BibleSchoolView({
             onClick={() => setActiveTab('biblioteca')}
             className={`inline-flex items-center gap-2 px-4 py-2 rounded-lg text-xs sm:text-sm font-medium transition-colors whitespace-nowrap shrink-0 cursor-pointer ${
               activeTab === 'biblioteca'
-                ? 'bg-white text-[#1E3A8A] font-semibold shadow-sm'
-                : 'text-[#44403C] hover:text-[#1C1B18]'
+                ? 'bg-[var(--bg-surface)] text-[var(--brand-accent)] font-semibold shadow-sm'
+                : 'text-[var(--text-secondary)] hover:text-[var(--text-primary)]'
             }`}
           >
             <Library className="w-4 h-4" />
@@ -196,19 +196,19 @@ export default function BibleSchoolView({
                   onClick={() => handleSelectCourse(course.id)}
                   className={`text-left p-4 rounded-xl border transition-colors cursor-pointer ${
                     isSelected
-                      ? 'bg-white border-[#1E3A8A] ring-1 ring-[#1E3A8A]'
-                      : 'bg-white border-[#E5E2DC] hover:bg-[#FAF9F6]'
+                      ? 'bg-[var(--bg-surface)] border-[var(--brand-accent)] ring-1 ring-[var(--brand-accent)]'
+                      : 'bg-[var(--bg-surface)] border-[var(--border-default)] hover:bg-[var(--bg-subtle)]'
                   }`}
                 >
-                  <div className="flex items-center justify-between gap-2 text-xs text-[#57534E]">
-                    <span className="tabular-nums font-semibold text-[#1E3A8A]">
+                  <div className="flex items-center justify-between gap-2 text-xs text-[var(--text-muted)]">
+                    <span className="tabular-nums font-semibold text-[var(--brand-accent)]">
                       Nivel {course.levelNumber}
                     </span>
                     <span className="tabular-nums">
                       {doneCount}/{course.lessons.length} lecciones
                     </span>
                   </div>
-                  <p className="mt-1 font-serif text-base font-semibold text-[#1C1B18]">
+                  <p className="mt-1 font-serif text-base font-semibold text-[var(--text-primary)]">
                     {course.levelTitle.replace(/^NIVEL \d+:\s*/, '')}
                   </p>
                 </button>
@@ -216,33 +216,33 @@ export default function BibleSchoolView({
             })}
           </div>
 
-          <section className="bg-white border border-[#E5E2DC] rounded-xl p-6 space-y-4">
-            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-[#EFECE6]">
+          <section className="bg-[var(--bg-surface)] border border-[var(--border-default)] rounded-xl p-6 space-y-4">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-[var(--border-subtle)]">
               <div>
-                <p className="text-xs font-medium text-[#1E3A8A]">
+                <p className="text-xs font-medium text-[var(--brand-accent)]">
                   {currentCourse.levelTitle}
                 </p>
-                <p className="mt-1 text-sm text-[#44403C] max-w-3xl">
+                <p className="mt-1 text-sm text-[var(--text-secondary)] max-w-3xl">
                   {currentCourse.presentation}
                 </p>
               </div>
               <div className="shrink-0 sm:text-right">
-                <p className="tabular-nums text-xs font-semibold text-[#1C1B18]">
+                <p className="tabular-nums text-xs font-semibold text-[var(--text-primary)]">
                   Avance del nivel: {courseProgressPct}% ({completedInCourse}/{currentCourse.lessons.length})
                 </p>
-                <p className="tabular-nums text-[11px] text-[#57534E]">
+                <p className="tabular-nums text-[11px] text-[var(--text-muted)]">
                   Avance total Escuela: {completedLessonIds.length}/{totalSchoolLessons} lecciones
                 </p>
               </div>
             </div>
 
             <div>
-              <p className="text-xs font-semibold text-[#1C1B18] mb-2">
+              <p className="text-xs font-semibold text-[var(--text-primary)] mb-2">
                 Objetivos del nivel:
               </p>
-              <ul className="grid grid-cols-1 md:grid-cols-3 gap-3 text-xs sm:text-sm text-[#44403C]">
+              <ul className="grid grid-cols-1 md:grid-cols-3 gap-3 text-xs sm:text-sm text-[var(--text-secondary)]">
                 {currentCourse.objectives.map((obj, idx) => (
-                  <li key={idx} className="p-3 rounded-lg bg-[#FAF9F6] border border-[#E5E2DC]">
+                  <li key={idx} className="p-3 rounded-lg bg-[var(--bg-input)] border border-[var(--border-default)]">
                     {obj}
                   </li>
                 ))}
@@ -252,7 +252,7 @@ export default function BibleSchoolView({
 
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
             <aside className="lg:col-span-4 space-y-2">
-              <p className="text-xs font-semibold text-[#57534E] px-1">
+              <p className="text-xs font-semibold text-[var(--text-muted)] px-1">
                 Lecciones del Nivel {currentCourse.levelNumber}
               </p>
               {currentCourse.lessons.map((lesson, idx) => {
@@ -268,22 +268,22 @@ export default function BibleSchoolView({
                     }}
                     className={`w-full text-left p-3.5 rounded-xl border transition-colors cursor-pointer flex items-start gap-3 ${
                       isSelected
-                        ? 'bg-white border-[#1E3A8A] shadow-xs'
-                        : 'bg-[#FAF9F6] border-[#E5E2DC] hover:bg-white'
+                        ? 'bg-[var(--bg-surface)] border-[var(--brand-accent)] shadow-xs'
+                        : 'bg-[var(--bg-page)] border-[var(--border-default)] hover:bg-[var(--bg-surface)]'
                     }`}
                   >
                     <span className="mt-0.5 shrink-0">
                       {isDone ? (
-                        <CheckCircle2 className="w-4 h-4 text-[#0F7B43]" />
+                        <CheckCircle2 className="w-4 h-4 text-[var(--wa-text)]" />
                       ) : (
-                        <Circle className="w-4 h-4 text-[#A8A29E]" />
+                        <Circle className="w-4 h-4 text-[var(--text-placeholder)]" />
                       )}
                     </span>
                     <div>
-                      <p className="tabular-nums text-[11px] font-semibold text-[#1E3A8A]">
+                      <p className="tabular-nums text-[11px] font-semibold text-[var(--brand-accent)]">
                         Lección {idx + 1} · {lesson.scriptureRefs[0]}
                       </p>
-                      <p className="mt-0.5 text-sm font-semibold text-[#1C1B18]">
+                      <p className="mt-0.5 text-sm font-semibold text-[var(--text-primary)]">
                         {lesson.title}
                       </p>
                     </div>
@@ -292,13 +292,13 @@ export default function BibleSchoolView({
               })}
             </aside>
 
-            <article className="lg:col-span-8 bg-white border border-[#E5E2DC] rounded-2xl p-6 sm:p-8 space-y-6">
-              <div className="flex flex-wrap items-start justify-between gap-4 pb-5 border-b border-[#EFECE6]">
+            <article className="lg:col-span-8 bg-[var(--bg-surface)] border border-[var(--border-default)] rounded-2xl p-6 sm:p-8 space-y-6">
+              <div className="flex flex-wrap items-start justify-between gap-4 pb-5 border-b border-[var(--border-subtle)]">
                 <div>
-                  <p className="text-xs font-semibold text-[#1E3A8A]">
+                  <p className="text-xs font-semibold text-[var(--brand-accent)]">
                     {currentLesson.scriptureRefs.join(' · ')}
                   </p>
-                  <h2 className="mt-1 font-serif text-2xl sm:text-3xl font-semibold text-[#1C1B18]">
+                  <h2 className="mt-1 font-serif text-2xl sm:text-3xl font-semibold text-[var(--text-primary)]">
                     {currentLesson.title}
                   </h2>
                 </div>
@@ -308,13 +308,13 @@ export default function BibleSchoolView({
                   onClick={() => toggleLessonComplete(currentLesson.id)}
                   className={`inline-flex items-center gap-2 px-4 py-2 rounded-lg border text-xs sm:text-sm font-semibold cursor-pointer whitespace-nowrap shrink-0 ${
                     completedLessonIds.includes(currentLesson.id)
-                      ? 'bg-[#0F7B43]/10 border-[#0F7B43]/40 text-[#0B6335]'
-                      : 'bg-[#FAF9F6] border-[#D6D3CD] text-[#1C1B18] hover:bg-[#F3F1EC]'
+                      ? 'bg-[var(--wa-soft-bg)] border-[var(--wa-soft-border)] text-[var(--wa-soft-text)]'
+                      : 'bg-[var(--bg-input)] border-[var(--border-input)] text-[var(--text-primary)] hover:bg-[var(--bg-subtle)]'
                   }`}
                 >
                   {completedLessonIds.includes(currentLesson.id) ? (
                     <>
-                      <CheckCircle2 className="w-4 h-4 text-[#0F7B43]" />
+                      <CheckCircle2 className="w-4 h-4 text-[var(--wa-text)]" />
                       <span>Completada</span>
                     </>
                   ) : (
@@ -326,30 +326,30 @@ export default function BibleSchoolView({
                 </button>
               </div>
 
-              <div className="space-y-4 text-sm sm:text-base text-[#44403C] leading-relaxed">
-                <div className="p-4 rounded-xl bg-[#FAF9F6] border border-[#E5E2DC]">
-                  <p className="text-xs font-semibold text-[#1E3A8A] mb-1">
+              <div className="space-y-4 text-sm sm:text-base text-[var(--text-secondary)] leading-relaxed">
+                <div className="p-4 rounded-xl bg-[var(--bg-input)] border border-[var(--border-default)]">
+                  <p className="text-xs font-semibold text-[var(--brand-accent)] mb-1">
                     1. Lo que dice el texto bíblico
                   </p>
                   <p>{currentLesson.biblicalTextSummary}</p>
                 </div>
 
-                <div className="p-4 rounded-xl bg-[#FAF9F6] border border-[#E5E2DC]">
-                  <p className="text-xs font-semibold text-[#1E3A8A] mb-1">
+                <div className="p-4 rounded-xl bg-[var(--bg-input)] border border-[var(--border-default)]">
+                  <p className="text-xs font-semibold text-[var(--brand-accent)] mb-1">
                     2. Desarrollo doctrinal
                   </p>
                   <p>{currentLesson.doctrinalDevelopment}</p>
                 </div>
 
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                  <div className="p-4 rounded-xl bg-[#F3F1EC] border border-[#E5E2DC]">
-                    <p className="text-xs font-semibold text-[#1C1B18] mb-1">
+                  <div className="p-4 rounded-xl bg-[var(--bg-subtle)] border border-[var(--border-default)]">
+                    <p className="text-xs font-semibold text-[var(--text-primary)] mb-1">
                       3. Aplicación práctica
                     </p>
                     <p className="text-sm">{currentLesson.practicalApplication}</p>
                   </div>
-                  <div className="p-4 rounded-xl bg-[#F3F1EC] border border-[#E5E2DC]">
-                    <p className="text-xs font-semibold text-[#1C1B18] mb-1">
+                  <div className="p-4 rounded-xl bg-[var(--bg-subtle)] border border-[var(--border-default)]">
+                    <p className="text-xs font-semibold text-[var(--text-primary)] mb-1">
                       Ejemplo cotidiano
                     </p>
                     <p className="text-sm">{currentLesson.everydayExample}</p>
@@ -358,11 +358,11 @@ export default function BibleSchoolView({
               </div>
 
               {/* Evaluación interactiva */}
-              <div className="p-5 rounded-xl bg-[#FAF9F6] border border-[#E5E2DC] space-y-3">
-                <p className="text-xs font-semibold text-[#1E3A8A]">
+              <div className="p-5 rounded-xl bg-[var(--bg-input)] border border-[var(--border-default)] space-y-3">
+                <p className="text-xs font-semibold text-[var(--brand-accent)]">
                   Evaluación de la lección
                 </p>
-                <p className="text-sm font-semibold text-[#1C1B18]">
+                <p className="text-sm font-semibold text-[var(--text-primary)]">
                   {currentLesson.question}
                 </p>
                 <div className="space-y-2">
@@ -370,12 +370,12 @@ export default function BibleSchoolView({
                     const isPicked = quizAnswer === idx;
                     const isRight = idx === currentLesson.correctIndex;
                     let cls =
-                      'bg-white border-[#D6D3CD] text-[#44403C] hover:border-[#1E3A8A]';
+                      'bg-[var(--bg-surface)] border-[var(--border-input)] text-[var(--text-secondary)] hover:border-[var(--brand-accent)]';
                     if (quizAnswer !== null) {
                       if (isRight) {
-                        cls = 'bg-[#0F7B43]/10 border-[#0F7B43] text-[#0B6335] font-medium';
+                        cls = 'bg-[var(--wa-soft-bg)] border-[var(--wa-text)] text-[var(--wa-soft-text)] font-medium';
                       } else if (isPicked) {
-                        cls = 'bg-[#FEF2F2] border-[#B91C1C] text-[#991B1B]';
+                        cls = 'bg-[var(--danger-bg)] border-[var(--danger-border)] text-[var(--danger-text)]';
                       }
                     }
                     return (
@@ -394,8 +394,8 @@ export default function BibleSchoolView({
                   <p
                     className={`text-xs sm:text-sm font-medium pt-1 ${
                       quizAnswer === currentLesson.correctIndex
-                        ? 'text-[#0B6335]'
-                        : 'text-[#991B1B]'
+                        ? 'text-[var(--wa-soft-text)]'
+                        : 'text-[var(--danger-text)]'
                     }`}
                   >
                     {quizAnswer === currentLesson.correctIndex
@@ -409,7 +409,7 @@ export default function BibleSchoolView({
               <div className="space-y-2">
                 <label
                   htmlFor="lesson-notes"
-                  className="block text-xs font-semibold text-[#1C1B18]"
+                  className="block text-xs font-semibold text-[var(--text-primary)]"
                 >
                   Tus notas de estudio (guardadas solo en este navegador)
                 </label>
@@ -419,11 +419,11 @@ export default function BibleSchoolView({
                   value={notesByLesson[currentLesson.id] || ''}
                   onChange={(e) => updateNote(currentLesson.id, e.target.value)}
                   placeholder="Anota aquí versículos clave, preguntas o aplicaciones personales..."
-                  className="w-full rounded-lg border border-[#D6D3CD] bg-[#FAF9F6] px-3.5 py-2.5 text-sm text-[#1C1B18] placeholder:text-[#78716C] focus:outline-none focus:ring-2 focus:ring-[#1E3A8A]"
+                  className="w-full rounded-lg border border-[var(--border-input)] bg-[var(--bg-input)] px-3.5 py-2.5 text-sm text-[var(--text-primary)] placeholder:text-[var(--text-placeholder)] focus:outline-none focus:ring-2 focus:ring-[var(--brand-accent)]"
                 />
               </div>
 
-              <div className="pt-4 border-t border-[#EFECE6] flex flex-wrap items-center justify-between gap-4">
+              <div className="pt-4 border-t border-[var(--border-subtle)] flex flex-wrap items-center justify-between gap-4">
                 <button
                   type="button"
                   onClick={() =>
@@ -432,7 +432,7 @@ export default function BibleSchoolView({
                       `Estoy estudiando la lección "${currentLesson.title}" (${currentLesson.scriptureRefs.join(', ')}) en la Escuela Bíblica. ¿Puedes ayudarme a profundizar en su contexto bíblico y aplicación práctica?`
                     )
                   }
-                  className="inline-flex items-center gap-2 text-xs sm:text-sm font-semibold text-[#1E3A8A] hover:underline cursor-pointer"
+                  className="inline-flex items-center gap-2 text-xs sm:text-sm font-semibold text-[var(--brand-accent)] hover:underline cursor-pointer"
                 >
                   <MessageSquare className="w-4 h-4" />
                   <span>Consultar al Asistente IA sobre esta lección</span>
@@ -442,7 +442,7 @@ export default function BibleSchoolView({
                   href={PASTOR_WHATSAPP_URL}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="inline-flex items-center gap-1.5 text-xs font-semibold text-[#0F7B43] hover:underline"
+                  className="inline-flex items-center gap-1.5 text-xs font-semibold text-[var(--wa-text)] hover:underline"
                 >
                   <WhatsAppOfficialIcon className="w-3.5 h-3.5" />
                   <span>Preguntar al Pastor Jair</span>
@@ -473,8 +473,8 @@ export default function BibleSchoolView({
                   }}
                   className={`px-3.5 py-1.5 rounded-lg text-xs font-medium border transition-colors cursor-pointer ${
                     active
-                      ? 'bg-[#1E3A8A] border-[#1E3A8A] text-white'
-                      : 'bg-white border-[#E5E2DC] text-[#44403C] hover:bg-[#FAF9F6]'
+                      ? 'bg-[var(--brand-primary)] border-[var(--brand-primary)] text-white'
+                      : 'bg-[var(--bg-surface)] border-[var(--border-default)] text-[var(--text-secondary)] hover:bg-[var(--bg-subtle)]'
                   }`}
                 >
                   {cat}
@@ -494,17 +494,17 @@ export default function BibleSchoolView({
                     onClick={() => setSelectedResourceId(res.id)}
                     className={`w-full text-left p-4 rounded-xl border transition-colors cursor-pointer ${
                       active
-                        ? 'bg-white border-[#1E3A8A] shadow-xs'
-                        : 'bg-[#FAF9F6] border-[#E5E2DC] hover:bg-white'
+                        ? 'bg-[var(--bg-surface)] border-[var(--brand-accent)] shadow-xs'
+                        : 'bg-[var(--bg-page)] border-[var(--border-default)] hover:bg-[var(--bg-surface)]'
                     }`}
                   >
-                    <p className="text-[11px] font-semibold text-[#1E3A8A]">
+                    <p className="text-[11px] font-semibold text-[var(--brand-accent)]">
                       {res.category}
                     </p>
-                    <h3 className="mt-0.5 font-serif text-base font-semibold text-[#1C1B18]">
+                    <h3 className="mt-0.5 font-serif text-base font-semibold text-[var(--text-primary)]">
                       {res.title}
                     </h3>
-                    <p className="mt-1 text-xs text-[#57534E] line-clamp-2">
+                    <p className="mt-1 text-xs text-[var(--text-muted)] line-clamp-2">
                       {res.summary}
                     </p>
                   </button>
@@ -512,36 +512,36 @@ export default function BibleSchoolView({
               })}
             </aside>
 
-            <article className="lg:col-span-7 bg-white border border-[#E5E2DC] rounded-2xl p-6 sm:p-8 space-y-5">
-              <div className="pb-4 border-b border-[#EFECE6]">
-                <div className="flex flex-wrap items-center gap-2 text-xs text-[#1E3A8A] font-semibold">
+            <article className="lg:col-span-7 bg-[var(--bg-surface)] border border-[var(--border-default)] rounded-2xl p-6 sm:p-8 space-y-5">
+              <div className="pb-4 border-b border-[var(--border-subtle)]">
+                <div className="flex flex-wrap items-center gap-2 text-xs text-[var(--brand-accent)] font-semibold">
                   <BookOpen className="w-4 h-4" />
                   <span>{activeResource.category}</span>
                   <span>·</span>
                   <span>{activeResource.scriptureRefs.join(' · ')}</span>
                 </div>
-                <h2 className="mt-2 font-serif text-2xl font-semibold text-[#1C1B18]">
+                <h2 className="mt-2 font-serif text-2xl font-semibold text-[var(--text-primary)]">
                   {activeResource.title}
                 </h2>
-                <p className="mt-2 text-sm text-[#57534E]">{activeResource.summary}</p>
+                <p className="mt-2 text-sm text-[var(--text-muted)]">{activeResource.summary}</p>
               </div>
 
-              <div className="space-y-3 text-sm sm:text-base text-[#44403C] leading-relaxed">
+              <div className="space-y-3 text-sm sm:text-base text-[var(--text-secondary)] leading-relaxed">
                 {activeResource.content.map((paragraph, idx) => (
                   <p key={idx}>{paragraph}</p>
                 ))}
               </div>
 
-              <div className="p-4 rounded-xl bg-[#F3F1EC] border border-[#E5E2DC]">
-                <p className="text-xs font-semibold text-[#1C1B18]">
+              <div className="p-4 rounded-xl bg-[var(--bg-subtle)] border border-[var(--border-default)]">
+                <p className="text-xs font-semibold text-[var(--text-primary)]">
                   Paso práctico recomendado
                 </p>
-                <p className="mt-1 text-sm text-[#44403C]">
+                <p className="mt-1 text-sm text-[var(--text-secondary)]">
                   {activeResource.practicalTakeaway}
                 </p>
               </div>
 
-              <div className="pt-4 border-t border-[#EFECE6] flex flex-wrap items-center justify-between gap-4">
+              <div className="pt-4 border-t border-[var(--border-subtle)] flex flex-wrap items-center justify-between gap-4">
                 <button
                   type="button"
                   onClick={() =>
@@ -550,7 +550,7 @@ export default function BibleSchoolView({
                       `Estoy leyendo "${activeResource.title}" (${activeResource.scriptureRefs.join(', ')}) en la Biblioteca de Recursos. ¿Puedes ampliar este tema con base bíblica y aplicación práctica?`
                     )
                   }
-                  className="inline-flex items-center gap-2 text-xs sm:text-sm font-semibold text-[#1E3A8A] hover:underline cursor-pointer"
+                  className="inline-flex items-center gap-2 text-xs sm:text-sm font-semibold text-[var(--brand-accent)] hover:underline cursor-pointer"
                 >
                   <MessageSquare className="w-4 h-4" />
                   <span>Profundizar este recurso con el Asistente IA</span>
@@ -560,7 +560,7 @@ export default function BibleSchoolView({
                   href={PASTOR_WHATSAPP_URL}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="inline-flex items-center gap-1.5 text-xs font-semibold text-[#0F7B43] hover:underline"
+                  className="inline-flex items-center gap-1.5 text-xs font-semibold text-[var(--wa-text)] hover:underline"
                 >
                   <WhatsAppOfficialIcon className="w-3.5 h-3.5" />
                   <span>Hablar con el Pastor Jair</span>

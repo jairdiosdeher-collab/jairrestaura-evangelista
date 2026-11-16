@@ -82,7 +82,7 @@ function FormattedMessage({ text }: { text: string }) {
     return parts.map((part, idx) => {
       if (part.startsWith('**') && part.endsWith('**')) {
         return (
-          <strong key={idx} className="font-semibold text-[#1C1B18]">
+          <strong key={idx} className="font-semibold text-[var(--text-primary)]">
             {part.slice(2, -2)}
           </strong>
         );
@@ -92,7 +92,7 @@ function FormattedMessage({ text }: { text: string }) {
   };
 
   return (
-    <div className="space-y-2.5 text-sm sm:text-[15px] leading-relaxed text-[#292524]">
+    <div className="space-y-2.5 text-sm sm:text-[15px] leading-relaxed text-[var(--text-secondary)]">
       {lines.map((rawLine, idx) => {
         const line = rawLine.trim();
         if (!line) {
@@ -101,7 +101,7 @@ function FormattedMessage({ text }: { text: string }) {
         if (line.startsWith('### ') || line.startsWith('## ')) {
           const clean = line.replace(/^#{2,3}\s+/, '');
           return (
-            <h4 key={idx} className="font-serif text-base font-semibold text-[#1C1B18] pt-1">
+            <h4 key={idx} className="font-serif text-base font-semibold text-[var(--text-primary)] pt-1">
               {renderInlineBold(clean)}
             </h4>
           );
@@ -109,7 +109,7 @@ function FormattedMessage({ text }: { text: string }) {
         if (line.startsWith('- ') || line.startsWith('* ')) {
           return (
             <div key={idx} className="flex items-start gap-2.5 pl-1">
-              <span aria-hidden="true" className="text-[#1E3A8A] font-semibold mt-0.5">
+              <span aria-hidden="true" className="text-[var(--brand-accent)] font-semibold mt-0.5">
                 ·
               </span>
               <p className="flex-1">{renderInlineBold(line.slice(2))}</p>
@@ -120,7 +120,7 @@ function FormattedMessage({ text }: { text: string }) {
         if (numberedMatch) {
           return (
             <div key={idx} className="flex items-start gap-2.5 pl-1">
-              <span className="tabular-nums text-xs font-semibold text-[#1E3A8A] mt-1 shrink-0">
+              <span className="tabular-nums text-xs font-semibold text-[var(--brand-accent)] mt-1 shrink-0">
                 {numberedMatch[1]}
               </span>
               <p className="flex-1">{renderInlineBold(numberedMatch[2])}</p>
@@ -300,22 +300,22 @@ export default function EvangelistChatView({
     <div className="max-w-6xl mx-auto px-4 sm:px-6 pt-8 sm:pt-10 pb-8">
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
         <aside className="lg:col-span-4 space-y-6">
-          <div className="bg-white border border-[#E5E2DC] rounded-xl p-5">
-            <p className="text-xs font-medium text-[#57534E]">
+          <div className="bg-[var(--bg-surface)] border border-[var(--border-default)] rounded-xl p-5">
+            <p className="text-xs font-medium text-[var(--text-muted)]">
               Orientación bíblica · Principiante y avanzado
             </p>
-            <h1 className="mt-1 font-serif text-2xl font-semibold text-[#1C1B18]">
+            <h1 className="mt-1 font-serif text-2xl font-semibold text-[var(--text-primary)]">
               Asistente Bíblico IA
             </h1>
-            <p className="mt-2 text-sm text-[#44403C] leading-relaxed">
+            <p className="mt-2 text-sm text-[var(--text-secondary)] leading-relaxed">
               Consulta las Escrituras con contexto, distinción entre texto bíblico, interpretación doctrinal y aplicación práctica.
             </p>
 
-            <div className="mt-4 pt-4 border-t border-[#EFECE6]">
-              <p className="text-xs font-semibold text-[#1C1B18] mb-2">
+            <div className="mt-4 pt-4 border-t border-[var(--border-subtle)]">
+              <p className="text-xs font-semibold text-[var(--text-primary)] mb-2">
                 Nivel de explicación
               </p>
-              <div className="grid grid-cols-3 gap-1 p-1 bg-[#EFECE6] rounded-lg">
+              <div className="grid grid-cols-3 gap-1 p-1 bg-[var(--bg-muted)] rounded-lg">
                 {BIBLICAL_LEVELS.map((lvl) => {
                   const active = level === lvl.id;
                   return (
@@ -325,8 +325,8 @@ export default function EvangelistChatView({
                       onClick={() => setLevel(lvl.id)}
                       className={`px-2 py-1.5 rounded-md text-xs font-medium transition-colors cursor-pointer whitespace-nowrap truncate ${
                         active
-                          ? 'bg-white text-[#1E3A8A] font-semibold shadow-sm'
-                          : 'text-[#44403C] hover:text-[#1C1B18]'
+                          ? 'bg-[var(--bg-surface)] text-[var(--brand-accent)] font-semibold shadow-sm'
+                          : 'text-[var(--text-secondary)] hover:text-[var(--text-primary)]'
                       }`}
                     >
                       {lvl.label}
@@ -336,10 +336,10 @@ export default function EvangelistChatView({
               </div>
             </div>
 
-            <div className="mt-4 pt-4 border-t border-[#EFECE6]">
+            <div className="mt-4 pt-4 border-t border-[var(--border-subtle)]">
               <label
                 htmlFor="spiritual-profile"
-                className="block text-xs font-semibold text-[#1C1B18] mb-2"
+                className="block text-xs font-semibold text-[var(--text-primary)] mb-2"
               >
                 Tu situación actual
               </label>
@@ -347,7 +347,7 @@ export default function EvangelistChatView({
                 id="spiritual-profile"
                 value={profile}
                 onChange={(e) => setProfile(e.target.value)}
-                className="w-full rounded-lg border border-[#D6D3CD] bg-[#FAF9F6] px-3 py-2 text-sm text-[#1C1B18] focus:outline-none focus:ring-2 focus:ring-[#1E3A8A]"
+                className="w-full rounded-lg border border-[var(--border-input)] bg-[var(--bg-input)] px-3 py-2 text-sm text-[var(--text-primary)] focus:outline-none focus:ring-2 focus:ring-[var(--brand-accent)]"
               >
                 {SPIRITUAL_PROFILES.map((p) => (
                   <option key={p} value={p}>
@@ -357,8 +357,8 @@ export default function EvangelistChatView({
               </select>
             </div>
 
-            <div className="mt-5 pt-4 border-t border-[#EFECE6]">
-              <p className="text-xs font-semibold text-[#1C1B18] mb-2.5">
+            <div className="mt-5 pt-4 border-t border-[var(--border-subtle)]">
+              <p className="text-xs font-semibold text-[var(--text-primary)] mb-2.5">
                 Opciones rápidas de conversación
               </p>
               <div className="space-y-1.5">
@@ -370,9 +370,9 @@ export default function EvangelistChatView({
                     onClick={() =>
                       sendMessage(opt.prompt, undefined, opt.highlightWhatsApp)
                     }
-                    className="w-full text-left px-3 py-2 rounded-lg text-xs sm:text-sm text-[#44403C] bg-[#FAF9F6] hover:bg-[#1E3A8A]/8 hover:text-[#1E3A8A] border border-[#E5E2DC] transition-colors cursor-pointer disabled:opacity-50 flex items-center gap-2"
+                    className="w-full text-left px-3 py-2 rounded-lg text-xs sm:text-sm text-[var(--text-secondary)] bg-[var(--bg-input)] hover:bg-[var(--brand-soft)] hover:text-[var(--brand-accent)] border border-[var(--border-default)] transition-colors cursor-pointer disabled:opacity-50 flex items-center gap-2"
                   >
-                    <span className="tabular-nums text-xs font-semibold text-[#1E3A8A] shrink-0">
+                    <span className="tabular-nums text-xs font-semibold text-[var(--brand-accent)] shrink-0">
                       {opt.number}.
                     </span>
                     <span className="truncate">{opt.label}</span>
@@ -385,26 +385,26 @@ export default function EvangelistChatView({
           <div
             className={`border rounded-xl p-5 transition-colors ${
               showPastorPromptCard
-                ? 'bg-[#0F7B43]/10 border-[#0F7B43]'
-                : 'bg-[#F3F1EC] border-[#E5E2DC]'
+                ? 'bg-[var(--wa-soft-bg)] border-[var(--wa-soft-border)]'
+                : 'bg-[var(--bg-subtle)] border-[var(--border-default)]'
             }`}
           >
-            <h2 className="font-serif text-lg font-semibold text-[#1C1B18]">
+            <h2 className="font-serif text-lg font-semibold text-[var(--text-primary)]">
               Contacto directo con el Pastor Jair
             </h2>
-            <p className="mt-1.5 text-sm text-[#44403C] leading-relaxed">
+            <p className="mt-1.5 text-sm text-[var(--text-secondary)] leading-relaxed">
               Este asistente no sustituye al pastor ni a la congregación local. Para hablar personalmente con el Pastor Jair, abre WhatsApp y confirma el envío de tu mensaje.
             </p>
             <a
               href={PASTOR_WHATSAPP_URL}
               target="_blank"
               rel="noopener noreferrer"
-              className="mt-4 w-full inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-lg bg-[#0F7B43] hover:bg-[#0B6335] text-white text-xs sm:text-sm font-semibold transition-colors"
+              className="mt-4 w-full inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-lg bg-[var(--wa-bg)] hover:bg-[var(--wa-bg-hover)] text-white text-xs sm:text-sm font-semibold transition-colors"
             >
               <WhatsAppOfficialIcon className="w-4 h-4" />
               <span>HABLAR CON EL PASTOR JAIR</span>
             </a>
-            <p className="mt-2 text-xs text-[#57534E] text-center">
+            <p className="mt-2 text-xs text-[var(--text-muted)] text-center">
               WhatsApp oficial: {PASTOR_WHATSAPP_DISPLAY}
             </p>
           </div>
@@ -412,14 +412,14 @@ export default function EvangelistChatView({
 
         <section
           aria-label="Conversación bíblica"
-          className="lg:col-span-8 bg-white border border-[#E5E2DC] rounded-xl flex flex-col h-[74vh] min-h-[540px] max-h-[820px]"
+          className="lg:col-span-8 bg-[var(--bg-surface)] border border-[var(--border-default)] rounded-xl flex flex-col h-[74vh] min-h-[540px] max-h-[820px]"
         >
-          <div className="px-5 py-3.5 border-b border-[#E5E2DC] flex items-center justify-between gap-4">
+          <div className="px-5 py-3.5 border-b border-[var(--border-default)] flex items-center justify-between gap-4">
             <div>
-              <p className="text-sm font-semibold text-[#1C1B18]">
+              <p className="text-sm font-semibold text-[var(--text-primary)]">
                 JAIRRESTAURA – EVANGELISTA
               </p>
-              <p className="text-xs text-[#57534E]">
+              <p className="text-xs text-[var(--text-muted)]">
                 Nivel: {level} · Doctrina evangélica, trinitaria y pentecostal (MMM)
               </p>
             </div>
@@ -427,7 +427,7 @@ export default function EvangelistChatView({
               type="button"
               onClick={handleReset}
               disabled={isStreaming}
-              className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-[#D6D3CD] text-xs font-medium text-[#44403C] hover:bg-[#F3F1EC] transition-colors cursor-pointer disabled:opacity-50 whitespace-nowrap shrink-0"
+              className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-[var(--border-input)] text-xs font-medium text-[var(--text-secondary)] hover:bg-[var(--bg-subtle)] transition-colors cursor-pointer disabled:opacity-50 whitespace-nowrap shrink-0"
             >
               <RotateCcw className="w-3.5 h-3.5" />
               <span>Nueva conversación</span>
@@ -443,8 +443,8 @@ export default function EvangelistChatView({
                 <div
                   className={`max-w-[90%] sm:max-w-[82%] rounded-xl px-4 py-3.5 ${
                     msg.role === 'user'
-                      ? 'bg-[#1E3A8A] text-white'
-                      : 'bg-[#FAF9F6] border border-[#E5E2DC] text-[#1C1B18]'
+                      ? 'bg-[var(--brand-primary)] text-white'
+                      : 'bg-[var(--bg-input)] border border-[var(--border-default)] text-[var(--text-primary)]'
                   }`}
                 >
                   {msg.role === 'user' ? (
@@ -454,8 +454,8 @@ export default function EvangelistChatView({
                   ) : msg.text ? (
                     <FormattedMessage text={msg.text} />
                   ) : (
-                    <div className="flex items-center gap-2 text-xs text-[#57534E] py-1">
-                      <Loader2 className="w-4 h-4 animate-spin text-[#1E3A8A]" />
+                    <div className="flex items-center gap-2 text-xs text-[var(--text-muted)] py-1">
+                      <Loader2 className="w-4 h-4 animate-spin text-[var(--brand-accent)]" />
                       <span>Consultando las Escrituras y preparando respuesta...</span>
                     </div>
                   )}
@@ -466,7 +466,7 @@ export default function EvangelistChatView({
             {errorMsg && (
               <div
                 role="alert"
-                className="p-4 rounded-lg border border-[#B91C1C]/30 bg-[#FEF2F2] text-sm text-[#991B1B] space-y-3"
+                className="p-4 rounded-lg border border-[var(--danger-border)] bg-[var(--danger-bg)] text-sm text-[var(--danger-text)] space-y-3"
               >
                 <p className="font-medium">{errorMsg}</p>
                 <div className="flex flex-wrap items-center gap-2 pt-1">
@@ -474,7 +474,7 @@ export default function EvangelistChatView({
                     <button
                       type="button"
                       onClick={onNavigateToSchool}
-                      className="px-3 py-1.5 rounded-md bg-white border border-[#D6D3CD] text-xs font-semibold text-[#1E3A8A] hover:bg-[#FAF9F6] cursor-pointer"
+                      className="px-3 py-1.5 rounded-md bg-[var(--bg-surface)] border border-[var(--border-input)] text-xs font-semibold text-[var(--brand-accent)] hover:bg-[var(--bg-subtle)] cursor-pointer"
                     >
                       Ir a Escuela Bíblica
                     </button>
@@ -483,7 +483,7 @@ export default function EvangelistChatView({
                     <button
                       type="button"
                       onClick={onNavigateToDiscipleship}
-                      className="px-3 py-1.5 rounded-md bg-white border border-[#D6D3CD] text-xs font-semibold text-[#1E3A8A] hover:bg-[#FAF9F6] cursor-pointer"
+                      className="px-3 py-1.5 rounded-md bg-[var(--bg-surface)] border border-[var(--border-input)] text-xs font-semibold text-[var(--brand-accent)] hover:bg-[var(--bg-subtle)] cursor-pointer"
                     >
                       Ir al Discipulado 90 Días
                     </button>
@@ -492,7 +492,7 @@ export default function EvangelistChatView({
                     <button
                       type="button"
                       onClick={onNavigateToLibrary}
-                      className="px-3 py-1.5 rounded-md bg-white border border-[#D6D3CD] text-xs font-semibold text-[#1E3A8A] hover:bg-[#FAF9F6] cursor-pointer"
+                      className="px-3 py-1.5 rounded-md bg-[var(--bg-surface)] border border-[var(--border-input)] text-xs font-semibold text-[var(--brand-accent)] hover:bg-[var(--bg-subtle)] cursor-pointer"
                     >
                       Explorar Biblioteca
                     </button>
@@ -501,7 +501,7 @@ export default function EvangelistChatView({
                     href={PASTOR_WHATSAPP_URL}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-md bg-[#0F7B43] text-white text-xs font-semibold hover:bg-[#0B6335]"
+                    className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-md bg-[var(--wa-bg)] text-white text-xs font-semibold hover:bg-[var(--wa-bg-hover)]"
                   >
                     <WhatsAppOfficialIcon className="w-3.5 h-3.5" />
                     <span>Hablar con el Pastor Jair</span>
@@ -518,7 +518,7 @@ export default function EvangelistChatView({
               e.preventDefault();
               sendMessage(input);
             }}
-            className="p-4 border-t border-[#E5E2DC] bg-[#FAF9F6] rounded-b-xl"
+            className="p-4 border-t border-[var(--border-default)] bg-[var(--bg-subtle)] rounded-b-xl"
           >
             <div className="flex items-end gap-3">
               <div className="flex-1">
@@ -537,13 +537,13 @@ export default function EvangelistChatView({
                     }
                   }}
                   placeholder="Escribe tu pregunta sobre la Biblia, el evangelio, doctrina o acompañamiento..."
-                  className="w-full resize-none rounded-lg border border-[#D6D3CD] bg-white px-3.5 py-2.5 text-sm text-[#1C1B18] placeholder:text-[#78716C] focus:outline-none focus:ring-2 focus:ring-[#1E3A8A]"
+                  className="w-full resize-none rounded-lg border border-[var(--border-input)] bg-[var(--bg-input)] px-3.5 py-2.5 text-sm text-[var(--text-primary)] placeholder:text-[var(--text-placeholder)] focus:outline-none focus:ring-2 focus:ring-[var(--brand-accent)]"
                 />
               </div>
               <button
                 type="submit"
                 disabled={!input.trim() || isStreaming}
-                className="inline-flex items-center justify-center gap-2 px-4 py-2.5 h-[44px] rounded-lg bg-[#1E3A8A] hover:bg-[#172D6B] text-white text-sm font-semibold transition-colors disabled:opacity-50 cursor-pointer shrink-0 whitespace-nowrap"
+                className="inline-flex items-center justify-center gap-2 px-4 py-2.5 h-[44px] rounded-lg bg-[var(--brand-primary)] hover:bg-[var(--brand-primary-hover)] text-white text-sm font-semibold transition-colors disabled:opacity-50 cursor-pointer shrink-0 whitespace-nowrap"
               >
                 {isStreaming ? (
                   <Loader2 className="w-4 h-4 animate-spin" />

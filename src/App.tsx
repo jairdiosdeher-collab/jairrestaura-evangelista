@@ -115,7 +115,7 @@ export default function App() {
   };
 
   return (
-    <div className="min-h-screen flex flex-col bg-[#FAF9F6] text-[#1C1B18]">
+    <div className="min-h-screen flex flex-col bg-[var(--bg-page)] text-[var(--text-primary)] transition-colors duration-150">
       <TopNav activeSection={activeSection} onNavigate={(sec) => navigateTo(sec)} />
 
       <main className="flex-1">
