@@ -3,15 +3,16 @@ import {
   Upload, Play, Pause, Square, Download, Share2, Sparkles, Type,
   Music, Image as ImageIcon, Sliders, Cross, Sun, Move, ZoomIn,
   RotateCcw, Plus, Trash2, CheckCircle2, AlertCircle, Volume2,
-  Film, FileImage, Wand2, Eye, Layers, RefreshCw
+  Film, FileImage, Wand2, Eye, Layers, RefreshCw, Zap, XCircle, Gauge
 } from 'lucide-react';
 
 // ============================================================================
 // TIPOS E INTERFACES DEL ESTUDIO
 // ============================================================================
 
-type AspectRatioKey = '9:16' | '16:9' | '1:1';
-type ResolutionKey = '720x1280' | '1080x1920' | '1920x1080' | '1080x1080';
+type AspectRatioKey = '1:1' | '9:16' | '16:9';
+type ResolutionKey = '720x720' | '1080x1080' | '720x1280' | '1080x1920' | '1920x1080';
+type ExportPresetMode = 'fast' | 'recommended' | 'professional';
 type CameraMode = 'cinematic-in' | 'progressive-zoom' | 'smooth-out' | 'pan-sweep' | 'depth-3d' | 'static';
 type TextAnimEffect = 'gold-shine' | 'fade-in' | 'glow-pulse' | 'fade-out-end' | 'none';
 type ExportFormat = 'mp4' | 'webm' | 'gif' | 'png';
@@ -60,6 +61,17 @@ interface Particle {
   hue: number;
 }
 
+interface ExportTelemetry {
+  percent: number;
+  currentFrame: number;
+  totalFrames: number;
+  elapsedSec: number;
+  engineLabel: string;
+  finalDurationSec: number;
+  fileSizeText: string;
+  actualFormatLabel: string;
+}
+
 // ============================================================================
 // CONSTANTES Y PRESETS CRISTIANOS
 // ============================================================================
@@ -74,20 +86,13 @@ const BIBLICAL_PRESETS = [
   'DIOS TIENE UN PROPÓSITO CONTIGO'
 ];
 
-const RESOLUTIONS: Record<ResolutionKey, { width: number; height: number; aspect: AspectRatioKey; label: string }> = {
-  '720x1280': { width: 720, height: 1280, aspect: '9:16', label: '720 × 1280 (Vertical HD 9:16)' },
-  '1080x1920': { width: 1080, height: 1920, aspect: '9:16', label: '1080 × 1920 (Vertical Full HD 9:16)' },
-  '1920x1080': { width: 1920, height: 1080, aspect: '16:9', label: '1920 × 1080 (Horizontal Full HD 16:9)' },
-  '1080x1080': { width: 1080, height: 1080, aspect: '1:1', label: '1080 × 1080 (Cuadrado Redes 1:1)' }
-};
-
 const INITIAL_TEXT_LAYERS: TextLayer[] = [
   {
     id: 'layer-1',
     text: '¡JESUCRISTO TE AMA!',
     x: 50,
     y: 12,
-    fontSize: 54,
+    fontSize: 48,
     color: 'gold',
     effect: 'gold-shine',
     visible: true
@@ -96,8 +101,8 @@ const INITIAL_TEXT_LAYERS: TextLayer[] = [
     id: 'layer-2',
     text: 'HOY ES EL DÍA DE TU SALVACIÓN',
     x: 50,
-    y: 19,
-    fontSize: 38,
+    y: 20,
+    fontSize: 34,
     color: 'white',
     effect: 'fade-in',
     visible: true
@@ -106,27 +111,78 @@ const INITIAL_TEXT_LAYERS: TextLayer[] = [
     id: 'layer-3',
     text: 'JAIRRESTAURA EVANGELISTA',
     x: 50,
-    y: 86,
-    fontSize: 42,
+    y: 83,
+    fontSize: 36,
     color: 'gold',
-    effect: 'glow-pulse',
+    effect: 'gold-shine',
     visible: true
   },
   {
     id: 'layer-4',
     text: '¡VEN A CRISTO!',
     x: 50,
-    y: 92,
+    y: 91,
     fontSize: 52,
     color: 'warm',
-    effect: 'gold-shine',
+    effect: 'glow-pulse',
     visible: true
   }
 ];
 
-// ============================================================================
-// GENERADOR DE ILUSTRACIÓN BASE DE ALTA DEFINICIÓN (SI NO HAY ARCHIVO EXTERNO)
-// ============================================================================
+const RESOLUTIONS: Record<ResolutionKey, { width: number; height: number; aspect: AspectRatioKey; label: string }> = {
+  '720x720': { width: 720, height: 720, aspect: '1:1', label: '720 × 720 (Cuadrado Rápido 1:1)' },
+  '1080x1080': { width: 1080, height: 1080, aspect: '1:1', label: '1080 × 1080 (Cuadrado HD 1:1)' },
+  '720x1280': { width: 720, height: 1280, aspect: '9:16', label: '720 × 1280 (Vertical HD 9:16)' },
+  '1080x1920': { width: 1080, height: 1920, aspect: '9:16', label: '1080 × 1920 (Vertical Full HD 9:16)' },
+  '1920x1080': { width: 1920, height: 1080, aspect: '16:9', label: '1920 × 1080 (Horizontal Full HD 16:9)' }
+};
+
+const EXPORT_MODALITIES: Record<
+  ExportPresetMode,
+  {
+    title: string;
+    badge: string;
+    resolution: ResolutionKey;
+    fps: 24 | 25 | 30;
+    quality: ExportQuality;
+    bitrate: number;
+    desc: string;
+  }
+> = {
+  fast: {
+    title: 'RÁPIDA',
+    badge: 'Ultrarrápida',
+    resolution: '720x720',
+    fps: 24,
+    quality: 'standard',
+    bitrate: 2_600_000,
+    desc: '720 × 720 • 24 FPS • Prioridad máxima a la velocidad'
+  },
+  recommended: {
+    title: 'RECOMENDADA',
+    badge: 'Equilibrada',
+    resolution: '1080x1080',
+    fps: 30,
+    quality: 'high',
+    bitrate: 5_200_000,
+    desc: '1080 × 1080 • 30 FPS • Alta calidad y rapidez'
+  },
+  professional: {
+    title: 'PROFESIONAL',
+    badge: 'Máxima Calidad',
+    resolution: '1080x1080',
+    fps: 30,
+    quality: 'max',
+    bitrate: 8_500_000,
+    desc: '1080 × 1080 • 30 FPS • Mayor tasa de bits compatible'
+  }
+};
+
+function formatFileSize(bytes: number): string {
+  if (bytes < 1024) return `${bytes} B`;
+  if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(1)} KB`;
+  return `${(bytes / (1024 * 1024)).toFixed(2)} MB`;
+}
 
 function createDefaultPastorCanvas(): HTMLCanvasElement {
   const c = document.createElement('canvas');
@@ -134,30 +190,13 @@ function createDefaultPastorCanvas(): HTMLCanvasElement {
   c.height = 1920;
   const g = c.getContext('2d')!;
 
-  // Cielo profundo celestial
-  const sky = g.createLinearGradient(0, 0, 0, 1920);
-  sky.addColorStop(0, '#04091a');
-  sky.addColorStop(0.32, '#0f2554');
-  sky.addColorStop(0.62, '#6b3e12');
-  sky.addColorStop(0.85, '#1f140c');
-  sky.addColorStop(1, '#050814');
-  g.fillStyle = sky;
+  const skyGrad = g.createLinearGradient(0, 0, 0, 1920);
+  skyGrad.addColorStop(0, '#040814');
+  skyGrad.addColorStop(0.35, '#112247');
+  skyGrad.addColorStop(0.68, '#78350f');
+  skyGrad.addColorStop(1, '#050811');
+  g.fillStyle = skyGrad;
   g.fillRect(0, 0, 1080, 1920);
-
-  // Nubes iluminadas
-  for (let i = 0; i < 18; i++) {
-    const cx = (i * 197) % 1080;
-    const cy = 280 + ((i * 89) % 520);
-    const r = 130 + (i % 4) * 55;
-    const cloud = g.createRadialGradient(cx, cy, 10, cx, cy, r);
-    cloud.addColorStop(0, 'rgba(254, 240, 138, 0.22)');
-    cloud.addColorStop(0.5, 'rgba(217, 119, 6, 0.12)');
-    cloud.addColorStop(1, 'rgba(0,0,0,0)');
-    g.fillStyle = cloud;
-    g.beginPath();
-    g.arc(cx, cy, r, 0, Math.PI * 2);
-    g.fill();
-  }
 
   // Gran Cruz Dorada Central
   const crossX = 540;
@@ -422,7 +461,7 @@ function renderCelestialAmbientBuffer(ctx: BaseAudioContext, durationSec: number
 
 export default function App() {
   // Pestaña activa del panel de herramientas
-  const [activeTab, setActiveTab] = useState<'image' | 'effects' | 'text' | 'audio' | 'export'>('image');
+  const [activeTab, setActiveTab] = useState<'image' | 'effects' | 'text' | 'audio' | 'export'>('export');
 
   // Estado de imagen original y encuadre no destructivo
   const [imageName, setImageName] = useState<string>('Ilustración Base Pastor Jair');
@@ -468,17 +507,42 @@ export default function App() {
   const [durationSec, setDurationSec] = useState<number>(10);
   const [currentTimeSec, setCurrentTimeSec] = useState<number>(0);
 
-  // Estado de Exportación
-  const [resolutionKey, setResolutionKey] = useState<ResolutionKey>('720x1280');
+  // Estado de Exportación y Modalidades
+  const [presetMode, setPresetMode] = useState<ExportPresetMode>('fast');
+  const [resolutionKey, setResolutionKey] = useState<ResolutionKey>('720x720');
   const [exportFormat, setExportFormat] = useState<ExportFormat>('mp4');
-  const [fps, setFps] = useState<24 | 25 | 30>(30);
-  const [quality, setQuality] = useState<ExportQuality>('high');
+  const [fps, setFps] = useState<24 | 25 | 30>(24);
+  const [quality, setQuality] = useState<ExportQuality>('standard');
   const [isExporting, setIsExporting] = useState<boolean>(false);
   const [exportProgress, setExportProgress] = useState<number>(0);
   const [exportStatusText, setExportStatusText] = useState<string>('');
+  const [telemetry, setTelemetry] = useState<ExportTelemetry>({
+    percent: 0,
+    currentFrame: 0,
+    totalFrames: 240,
+    elapsedSec: 0,
+    engineLabel: 'WebCodecs Hardware',
+    finalDurationSec: 10,
+    fileSizeText: '',
+    actualFormatLabel: 'MP4'
+  });
   const [exportedBlob, setExportedBlob] = useState<Blob | null>(null);
   const [exportedFileName, setExportedFileName] = useState<string>('');
   const [exportedUrl, setExportedUrl] = useState<string>('');
+
+  // Controladores de cancelación segura y bloqueo contra exportaciones simultáneas
+  const cancelExportRef = useRef<boolean>(false);
+  const exportLockRef = useRef<boolean>(false);
+  const activeRecorderRef = useRef<MediaRecorder | null>(null);
+
+  // Aplicar modalidad automática (RÁPIDA / RECOMENDADA / PROFESIONAL)
+  const applyPresetMode = useCallback((mode: ExportPresetMode) => {
+    const cfg = EXPORT_MODALITIES[mode];
+    setPresetMode(mode);
+    setResolutionKey(cfg.resolution);
+    setFps(cfg.fps);
+    setQuality(cfg.quality);
+  }, []);
 
   // Notificaciones toast (sin alert/confirm)
   const [toast, setToast] = useState<{ text: string; type: 'info' | 'success' | 'error' } | null>(null);
@@ -640,39 +704,51 @@ export default function App() {
       setAudioDurationSec(decoded.duration);
       setAudioStartOffset(0);
       setAudioSourceType('file');
-      showToast(`Audio "${file.name}" cargado (${decoded.duration.toFixed(1)}s).`, 'success');
+      showToast(`Audio "${file.name}" cargado y sincronizado.`, 'success');
     } catch {
-      showToast('No se pudo decodificar ese archivo de audio. Intenta con MP3 o WAV.', 'error');
+      showToast('No se pudo decodificar el archivo de audio. Prueba con MP3 o WAV.', 'error');
     }
   };
 
-  const downloadOriginalAudio = () => {
-    if (userAudioFileRef.current) {
-      const url = URL.createObjectURL(userAudioFileRef.current);
-      const a = document.createElement('a');
-      a.href = url;
-      a.download = userAudioFileRef.current.name;
-      a.click();
-      URL.revokeObjectURL(url);
-      showToast('Descargando archivo de audio original...', 'success');
-    } else {
-      showToast('Primero carga un archivo MP3 o WAV para descargarlo.', 'info');
+  // Caché de viñeta pre-renderizada para evitar recrear gradientes en cada fotograma
+  const vignetteCacheRef = useRef<{ width: number; height: number; canvas: HTMLCanvasElement } | null>(null);
+
+  const getCachedVignette = useCallback((width: number, height: number): HTMLCanvasElement => {
+    const existing = vignetteCacheRef.current;
+    if (existing && existing.width === width && existing.height === height) {
+      return existing.canvas;
     }
-  };
+    const vCanvas = document.createElement('canvas');
+    vCanvas.width = width;
+    vCanvas.height = height;
+    const vCtx = vCanvas.getContext('2d')!;
+    const vig = vCtx.createRadialGradient(
+      width / 2,
+      height / 2,
+      Math.min(width, height) * 0.35,
+      width / 2,
+      height / 2,
+      Math.max(width, height) * 0.75
+    );
+    vig.addColorStop(0, 'rgba(0,0,0,0)');
+    vig.addColorStop(1, 'rgba(3, 5, 12, 0.46)');
+    vCtx.fillStyle = vig;
+    vCtx.fillRect(0, 0, width, height);
+    vignetteCacheRef.current = { width, height, canvas: vCanvas };
+    return vCanvas;
+  }, []);
 
   // ============================================================================
-  // MOTOR DE RENDERIZADO CINEMATOGRÁFICO EN CANVAS 2D (DETERMINISTA POR TIEMPO `t`)
+  // MOTOR DE RENDERIZADO CINEMATOGRÁFICO EN CANVAS 2D (OPTIMIZADO Y DETERMINISTA)
   // ============================================================================
 
   const renderSceneAtTime = useCallback(
     (ctx: CanvasRenderingContext2D, width: number, height: number, t: number, totalDur: number) => {
-      ctx.clearRect(0, 0, width, height);
-
-      // Fondo negro profundo base
+      // Fondo negro profundo base (sobrescribe todo sin necesitar clearRect previo)
       ctx.fillStyle = '#050811';
       ctx.fillRect(0, 0, width, height);
 
-      const progress = totalDur > 0 ? (t % totalDur) / totalDur : 0;
+      const progress = totalDur > 0 ? Math.min(1, t / totalDur) : 0;
       const camFactor = cameraIntensity / 100;
 
       // 1. CÁLCULO DE MOVIMIENTO DE CÁMARA
@@ -897,8 +973,8 @@ export default function App() {
       );
       vig.addColorStop(0, 'rgba(0,0,0,0)');
       vig.addColorStop(1, 'rgba(3, 5, 12, 0.48)');
-      ctx.fillStyle = vig;
-      ctx.fillRect(0, 0, width, height);
+      // Viñeta cinematográfica pre-renderizada en caché (cero sobrecarga por fotograma)
+      ctx.drawImage(getCachedVignette(width, height), 0, 0);
 
       // 8. CAPAS DE TEXTO BÍBLICO Y EVANGELÍSTICO ANIMADO
       const scaleFactor = width / 720;
@@ -922,7 +998,6 @@ export default function App() {
         const tx = (layer.x / 100) * width;
         const ty = (layer.y / 100) * height + yShift;
         const fontPx = Math.round(layer.fontSize * scaleFactor);
-
         ctx.save();
         ctx.globalAlpha = alpha;
         ctx.textAlign = 'center';
@@ -997,24 +1072,29 @@ export default function App() {
         });
 
         ctx.restore();
-      }    },
-    [cameraMode, cameraIntensity, framing, effects, textLayers]
+      }
+    },
+    [cameraMode, cameraIntensity, framing, effects, textLayers, getCachedVignette]
   );
 
   // ============================================================================
-  // BUCLE DE ANIMACIÓN EN TIEMPO REAL
+  // BUCLE DE ANIMACIÓN EN TIEMPO REAL (SE PAUSA AUTOMÁTICAMENTE AL EXPORTAR)
   // ============================================================================
 
   useEffect(() => {
+    // Pausar el bucle de vista previa durante la exportación para dedicar 100% de CPU/GPU al render
+    if (isExporting) return;
+
     let rafId: number;
     const res = RESOLUTIONS[resolutionKey];
+    lastFrameTimeRef.current = 0;
 
     const loop = (now: number) => {
       if (!lastFrameTimeRef.current) lastFrameTimeRef.current = now;
       const dt = (now - lastFrameTimeRef.current) / 1000;
       lastFrameTimeRef.current = now;
 
-      if (isPlaying && !isExporting) {
+      if (isPlaying) {
         timeRef.current = (timeRef.current + dt) % durationSec;
         setCurrentTimeSec(timeRef.current);
       }
@@ -1025,7 +1105,7 @@ export default function App() {
           canvas.width = res.width;
           canvas.height = res.height;
         }
-        const ctx = canvas.getContext('2d');
+        const ctx = canvas.getContext('2d', { alpha: false });
         if (ctx) {
           renderSceneAtTime(ctx, res.width, res.height, timeRef.current, durationSec);
         }
@@ -1104,29 +1184,78 @@ export default function App() {
     return await offlineCtx.startRendering();
   };
 
+  // Cancelación segura en cualquier momento del renderizado
+  const handleCancelExport = useCallback(() => {
+    if (!exportLockRef.current) return;
+    cancelExportRef.current = true;
+    setExportStatusText('Cancelando exportación y liberando memoria...');
+    if (activeRecorderRef.current && activeRecorderRef.current.state !== 'inactive') {
+      try {
+        activeRecorderRef.current.stop();
+      } catch {
+        // Ignorar si ya estaba detenido
+      }
+    }
+  }, []);
+
   // ============================================================================
-  // EXPORTACIÓN REAL: MP4 (WebCodecs + mp4-muxer), WEBM, GIF Y PNG
+  // EXPORTACIÓN ULTRARRÁPIDA: WEBCODECS HARDWARE -> MEDIARECORDER -> GIF / PNG
   // ============================================================================
 
-  const handleExport = async () => {
-    if (isExporting) return;
-    const res = RESOLUTIONS[resolutionKey];
+  const handleExport = async (overrideOptions?: {
+    mode?: ExportPresetMode;
+    format?: ExportFormat;
+    autoDownload?: boolean;
+  }) => {
+    // Evitar exportaciones simultáneas
+    if (exportLockRef.current || isExporting) {
+      showToast('Ya hay una exportación en curso. Espera o cancélala primero.', 'info');
+      return;
+    }
+
+    const effectiveMode = overrideOptions?.mode ?? presetMode;
+    const modeCfg = EXPORT_MODALITIES[effectiveMode];
+    const effectiveResKey = overrideOptions?.mode ? modeCfg.resolution : resolutionKey;
+    const effectiveFps = overrideOptions?.mode ? modeCfg.fps : fps;
+    const effectiveQuality = overrideOptions?.mode ? modeCfg.quality : quality;
+    const effectiveFormat = overrideOptions?.format ?? exportFormat;
+    const autoDownload = overrideOptions?.autoDownload ?? false;
+
+    if (overrideOptions?.mode) {
+      applyPresetMode(overrideOptions.mode);
+    }
+    if (overrideOptions?.format) {
+      setExportFormat(overrideOptions.format);
+    }
+
+    const res = RESOLUTIONS[effectiveResKey];
 
     // 1. EXPORTAR IMAGEN PNG INSTANTÁNEA
-    if (exportFormat === 'png') {
+    if (effectiveFormat === 'png') {
       const offCanvas = document.createElement('canvas');
       offCanvas.width = res.width;
       offCanvas.height = res.height;
-      const offCtx = offCanvas.getContext('2d')!;
+      const offCtx = offCanvas.getContext('2d', { alpha: false })!;
       renderSceneAtTime(offCtx, res.width, res.height, timeRef.current, durationSec);
 
       offCanvas.toBlob((blob) => {
         if (!blob) return;
+        if (exportedUrl) URL.revokeObjectURL(exportedUrl);
         const url = URL.createObjectURL(blob);
         const fname = `JairRestaura_Evangelista_${res.width}x${res.height}.png`;
         setExportedBlob(blob);
         setExportedFileName(fname);
         setExportedUrl(url);
+        setTelemetry({
+          percent: 100,
+          currentFrame: 1,
+          totalFrames: 1,
+          elapsedSec: 0.1,
+          engineLabel: 'Canvas HD Snapshot',
+          finalDurationSec: 0,
+          fileSizeText: formatFileSize(blob.size),
+          actualFormatLabel: 'PNG'
+        });
         const a = document.createElement('a');
         a.href = url;
         a.download = fname;
@@ -1136,55 +1265,132 @@ export default function App() {
       return;
     }
 
+    // Bloquear exportaciones concurrentes y liberar URL anterior
+    exportLockRef.current = true;
+    cancelExportRef.current = false;
     setIsExporting(true);
     setExportProgress(0);
+    if (exportedUrl) {
+      URL.revokeObjectURL(exportedUrl);
+      setExportedUrl('');
+    }
     setExportedBlob(null);
     stopLiveAudio();
 
+    const exportStartPerf = performance.now();
+    // CÁLCULO EXACTO DE FOTOGRAMAS: 10s a 30fps = 300 frames; 10s a 24fps = 240 frames
+    const exactTotalFrames = Math.round(durationSec * effectiveFps);
+
+    setTelemetry({
+      percent: 0,
+      currentFrame: 0,
+      totalFrames: exactTotalFrames,
+      elapsedSec: 0,
+      engineLabel: 'Iniciando...',
+      finalDurationSec: durationSec,
+      fileSizeText: '',
+      actualFormatLabel: effectiveFormat.toUpperCase()
+    });
+
+    const finalizeAndRelease = () => {
+      exportLockRef.current = false;
+      cancelExportRef.current = false;
+      activeRecorderRef.current = null;
+      setIsExporting(false);
+    };
+
+    const triggerDownload = (url: string, filename: string) => {
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = filename;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+    };
+
     try {
       // 2. EXPORTAR GIF ANIMADO REAL EN NAVEGADOR
-      if (exportFormat === 'gif') {
-        setExportStatusText('Generando fotogramas del GIF animado...');
+      if (effectiveFormat === 'gif') {
         const gifW = Math.round(res.width * 0.45);
         const gifH = Math.round(res.height * 0.45);
         const gifFps = 12;
-        const gifDuration = Math.min(durationSec, 10); // GIF óptimo hasta 10s
-        const totalFrames = gifFps * gifDuration;
+        const gifTotalFrames = Math.round(durationSec * gifFps);
 
+        setExportStatusText(`Generando ${gifTotalFrames} fotogramas GIF...`);
         const offCanvas = document.createElement('canvas');
         offCanvas.width = gifW;
         offCanvas.height = gifH;
-        const offCtx = offCanvas.getContext('2d', { willReadFrequently: true })!;
+        const offCtx = offCanvas.getContext('2d', { willReadFrequently: true, alpha: false })!;
 
         const frames: ImageData[] = [];
-        for (let f = 0; f < totalFrames; f++) {
+        for (let f = 0; f < gifTotalFrames; f++) {
+          if (cancelExportRef.current) {
+            frames.length = 0;
+            showToast('Exportación GIF cancelada.', 'info');
+            finalizeAndRelease();
+            return;
+          }
           const t = f / gifFps;
-          renderSceneAtTime(offCtx, gifW, gifH, t, gifDuration);
+          renderSceneAtTime(offCtx, gifW, gifH, t, durationSec);
           frames.push(offCtx.getImageData(0, 0, gifW, gifH));
-          setExportProgress(Math.round(((f + 1) / totalFrames) * 85));
+
+          const pct = Math.round(((f + 1) / gifTotalFrames) * 85);
+          const elapsed = (performance.now() - exportStartPerf) / 1000;
+          setExportProgress(pct);
+          setTelemetry({
+            percent: pct,
+            currentFrame: f + 1,
+            totalFrames: gifTotalFrames,
+            elapsedSec: Number(elapsed.toFixed(1)),
+            engineLabel: 'Codificador GIF Local',
+            finalDurationSec: durationSec,
+            fileSizeText: '',
+            actualFormatLabel: 'GIF'
+          });
+
           if (f % 4 === 0) await new Promise((r) => setTimeout(r, 0));
         }
 
-        setExportStatusText('Codificando archivo GIF...');
+        setExportStatusText('Empaquetando archivo GIF...');
         const gifBlob = encodeSimpleAnimatedGIF(frames, gifW, gifH, Math.round(100 / gifFps));
+        frames.length = 0; // Liberar RAM inmediatamente
+
+        const elapsedFinal = Number(((performance.now() - exportStartPerf) / 1000).toFixed(1));
         const url = URL.createObjectURL(gifBlob);
-        const fname = `JairRestaura_Animado_${gifW}x${gifH}.gif`;
+        const fname = `JairRestaura_Animado_${gifW}x${gifH}_${durationSec}s.gif`;
+
         setExportedBlob(gifBlob);
         setExportedFileName(fname);
         setExportedUrl(url);
         setExportProgress(100);
-        showToast('¡GIF animado generado con éxito!', 'success');
-        setIsExporting(false);
+        setExportStatusText(`¡GIF listo en ${elapsedFinal}s!`);
+        setTelemetry({
+          percent: 100,
+          currentFrame: gifTotalFrames,
+          totalFrames: gifTotalFrames,
+          elapsedSec: elapsedFinal,
+          engineLabel: 'Codificador GIF Local',
+          finalDurationSec: durationSec,
+          fileSizeText: formatFileSize(gifBlob.size),
+          actualFormatLabel: 'GIF'
+        });
+
+        if (autoDownload) triggerDownload(url, fname);
+        showToast(`¡GIF animado exportado en ${elapsedFinal}s!`, 'success');
+        finalizeAndRelease();
         return;
       }
 
-      // 3. EXPORTAR MP4 REAL (WEBCODECS H.264 + AAC + MP4-MUXER)
-      if (exportFormat === 'mp4' && typeof VideoEncoder !== 'undefined') {
+      // 3. PRIMERA OPCIÓN: WEBCODECS API CON ACELERACIÓN POR HARDWARE (MP4 H.264 + AAC)
+      if (effectiveFormat === 'mp4' && typeof VideoEncoder !== 'undefined') {
+        let videoEncoder: VideoEncoder | null = null;
+        let audioEncoder: AudioEncoder | null = null;
+
         try {
-          setExportStatusText('Inicializando codificador MP4 H.264 + AAC...');
-          // Carga dinámica de mp4-muxer desde CDN ESM confiable
-          const mp4MuxerModuleUrl = 'https://cdn.jsdelivr.net/npm/mp4-muxer@5.1.3/+esm';
-          const { Muxer, ArrayBufferTarget } = await import(/* @vite-ignore */ mp4MuxerModuleUrl);
+          setExportStatusText('Activando aceleración por hardware WebCodecs...');
+          const { Muxer, ArrayBufferTarget } = await import(
+            /* @vite-ignore */ 'https://cdn.jsdelivr.net/npm/mp4-muxer@5.1.3/+esm'
+          );
 
           const hasAudio = audioSourceType !== 'none' && typeof AudioEncoder !== 'undefined';
           const sampleRate = 48000;
@@ -1208,55 +1414,59 @@ export default function App() {
           });
 
           const bitrateMap: Record<ExportQuality, number> = {
-            standard: 3_500_000,
-            high: 6_500_000,
-            max: 11_000_000
+            standard: 2_600_000,
+            high: 5_200_000,
+            max: 8_500_000
           };
+          const targetBitrate = effectiveMode === 'fast' ? 2_600_000 : bitrateMap[effectiveQuality];
 
           let encoderError: Error | null = null;
 
-          const videoEncoder = new VideoEncoder({
+          videoEncoder = new VideoEncoder({
             output: (chunk, meta) => muxer.addVideoChunk(chunk, meta),
             error: (e) => {
               encoderError = e;
             }
           });
 
-          // Perfil H.264 Baseline/Main compatible con WhatsApp, Android, iOS y Windows
-          const avcCodecs = ['avc1.420028', 'avc1.4d002a', 'avc1.640028'];
-          let configuredCodec = '';
-          for (const c of avcCodecs) {
-            const support = await VideoEncoder.isConfigSupported({
-              codec: c,
+          // Priorizar perfil Baseline/Main con aceleración por hardware para máxima velocidad
+          const avcConfigs = [
+            { codec: 'avc1.42001f', hw: 'prefer-hardware' as HardwareAcceleration },
+            { codec: 'avc1.420028', hw: 'prefer-hardware' as HardwareAcceleration },
+            { codec: 'avc1.4d002a', hw: 'prefer-hardware' as HardwareAcceleration },
+            { codec: 'avc1.42001f', hw: 'no-preference' as HardwareAcceleration }
+          ];
+
+          let chosenConfig: VideoEncoderConfig | null = null;
+          for (const candidate of avcConfigs) {
+            const cfg: VideoEncoderConfig = {
+              codec: candidate.codec,
               width: res.width,
               height: res.height,
-              bitrate: bitrateMap[quality],
-              framerate: fps
-            });
+              bitrate: targetBitrate,
+              framerate: effectiveFps,
+              hardwareAcceleration: candidate.hw,
+              latencyMode: 'realtime'
+            };
+            const support = await VideoEncoder.isConfigSupported(cfg);
             if (support.supported) {
-              configuredCodec = c;
+              chosenConfig = cfg;
               break;
             }
           }
 
-          if (!configuredCodec) {
-            throw new Error('H.264 no soportado por hardware en este dispositivo');
+          if (!chosenConfig) {
+            throw new Error('H.264 WebCodecs no disponible en este navegador');
           }
 
-          videoEncoder.configure({
-            codec: configuredCodec,
-            width: res.width,
-            height: res.height,
-            bitrate: bitrateMap[quality],
-            framerate: fps
-          });
+          videoEncoder.configure(chosenConfig);
 
-          // Codificar pista de audio AAC si el usuario seleccionó música/jingle
+          // Codificar audio una sola vez en bloques AAC de 1024 muestras
           if (hasAudio) {
-            setExportStatusText('Mezclando y codificando audio AAC...');
+            setExportStatusText('Sincronizando pista de audio AAC...');
             const mixedAudio = await buildMixedAudioBuffer(durationSec, sampleRate);
-            if (mixedAudio) {
-              const audioEncoder = new AudioEncoder({
+            if (mixedAudio && !cancelExportRef.current) {
+              audioEncoder = new AudioEncoder({
                 output: (chunk, meta) => muxer.addAudioChunk(chunk, meta),
                 error: (e) => {
                   encoderError = e;
@@ -1264,10 +1474,10 @@ export default function App() {
               });
 
               audioEncoder.configure({
-                codec: 'mp4a.40.2', // AAC-LC
+                codec: 'mp4a.40.2',
                 numberOfChannels: 2,
                 sampleRate,
-                bitrate: 192_000
+                bitrate: 160_000
               });
 
               const chunkFrames = 1024;
@@ -1295,52 +1505,72 @@ export default function App() {
 
               await audioEncoder.flush();
               audioEncoder.close();
+              audioEncoder = null;
             }
           }
 
-          // Renderizar y codificar cada fotograma de video
+          // Lienzo dedicado fuera de pantalla
           const offCanvas = document.createElement('canvas');
           offCanvas.width = res.width;
           offCanvas.height = res.height;
-          const offCtx = offCanvas.getContext('2d')!;
+          const offCtx = offCanvas.getContext('2d', { alpha: false, desynchronized: true })!;
 
-          const totalFrames = Math.ceil(durationSec * fps);
-          for (let frameIdx = 0; frameIdx < totalFrames; frameIdx++) {
+          const frameDurationUs = Math.round(1_000_000 / effectiveFps);
+          const keyFrameInterval = effectiveFps * 2;
+
+          for (let frameIdx = 0; frameIdx < exactTotalFrames; frameIdx++) {
+            if (cancelExportRef.current) {
+              if (videoEncoder.state !== 'closed') videoEncoder.close();
+              showToast('Exportación cancelada. Memoria liberada.', 'info');
+              finalizeAndRelease();
+              return;
+            }
             if (encoderError) throw encoderError;
 
-            const t = frameIdx / fps;
+            const t = frameIdx / effectiveFps;
             renderSceneAtTime(offCtx, res.width, res.height, t, durationSec);
 
-            const timestampUs = Math.round((frameIdx / fps) * 1_000_000);
-            const durationUs = Math.round((1 / fps) * 1_000_000);
             const videoFrame = new VideoFrame(offCanvas, {
-              timestamp: timestampUs,
-              duration: durationUs
+              timestamp: frameIdx * frameDurationUs,
+              duration: frameDurationUs
             });
 
-            const keyFrame = frameIdx % (fps * 2) === 0;
-            videoEncoder.encode(videoFrame, { keyFrame });
-            videoFrame.close();
+            videoEncoder.encode(videoFrame, { keyFrame: frameIdx % keyFrameInterval === 0 });
+            videoFrame.close(); // Liberar memoria de textura inmediatamente
 
-            // Control de cola para no saturar memoria
-            if (videoEncoder.encodeQueueSize > 8) {
+            // Control de contrapresión: evitar que la cola supere 4 fotogramas
+            if (videoEncoder.encodeQueueSize > 4) {
               await videoEncoder.flush();
             }
 
-            const pct = Math.round(((frameIdx + 1) / totalFrames) * 95);
-            setExportProgress(pct);
-            setExportStatusText(`Codificando MP4 H.264: fotograma ${frameIdx + 1} de ${totalFrames}...`);
-
-            if (frameIdx % 5 === 0) {
+            // Actualizar telemetría y ceder hilo principal cada 3 fotogramas
+            if (frameIdx % 3 === 0 || frameIdx === exactTotalFrames - 1) {
+              const pct = Math.min(98, Math.round(((frameIdx + 1) / exactTotalFrames) * 98));
+              const elapsed = Number(((performance.now() - exportStartPerf) / 1000).toFixed(1));
+              setExportProgress(pct);
+              setExportStatusText(`Codificando MP4 (${frameIdx + 1}/${exactTotalFrames} fotogramas)...`);
+              setTelemetry({
+                percent: pct,
+                currentFrame: frameIdx + 1,
+                totalFrames: exactTotalFrames,
+                elapsedSec: elapsed,
+                engineLabel: 'WebCodecs Hardware H.264',
+                finalDurationSec: durationSec,
+                fileSizeText: '',
+                actualFormatLabel: 'MP4 (H.264 + AAC)'
+              });
               await new Promise((r) => setTimeout(r, 0));
             }
           }
 
           await videoEncoder.flush();
           videoEncoder.close();
+          videoEncoder = null;
+
           muxer.finalize();
 
           const mp4Blob = new Blob([target.buffer], { type: 'video/mp4' });
+          const elapsedFinal = Number(((performance.now() - exportStartPerf) / 1000).toFixed(1));
           const url = URL.createObjectURL(mp4Blob);
           const fname = `JairRestaura_Evangelista_${res.width}x${res.height}_${durationSec}s.mp4`;
 
@@ -1348,31 +1578,57 @@ export default function App() {
           setExportedFileName(fname);
           setExportedUrl(url);
           setExportProgress(100);
-          setExportStatusText('¡Video MP4 listo para descargar y compartir!');
-          showToast('¡Video MP4 (H.264 + AAC) exportado con éxito!', 'success');
-          setIsExporting(false);
+          setExportStatusText(`¡Video MP4 listo en ${elapsedFinal}s!`);
+          setTelemetry({
+            percent: 100,
+            currentFrame: exactTotalFrames,
+            totalFrames: exactTotalFrames,
+            elapsedSec: elapsedFinal,
+            engineLabel: 'WebCodecs Hardware H.264',
+            finalDurationSec: durationSec,
+            fileSizeText: formatFileSize(mp4Blob.size),
+            actualFormatLabel: 'MP4 (H.264 + AAC)'
+          });
+
+          if (autoDownload) triggerDownload(url, fname);
+          showToast(`¡Video MP4 de ${durationSec}s listo en ${elapsedFinal}s!`, 'success');
+          finalizeAndRelease();
           return;
-        } catch (mp4Err) {
-          console.warn('Fallback a MediaRecorder tras error WebCodecs:', mp4Err);
-          showToast('Usando motor de grabación nativo del navegador...', 'info');
+        } catch (wcErr) {
+          if (videoEncoder && videoEncoder.state !== 'closed') {
+            try {
+              videoEncoder.close();
+            } catch {}
+          }
+          if (audioEncoder && audioEncoder.state !== 'closed') {
+            try {
+              audioEncoder.close();
+            } catch {}
+          }
+          if (cancelExportRef.current) {
+            finalizeAndRelease();
+            return;
+          }
+          console.warn('Cambiando a segunda opción MediaRecorder:', wcErr);
         }
       }
 
-      // 4. EXPORTACIÓN WEBM / FALLBACK MEDIARECORDER EN TIEMPO REAL CON AUDIO
-      setExportStatusText('Grabando video con audio sincronizado...');
+      // 4. SEGUNDA OPCIÓN: MEDIARECORDER ACELERADO CON EXTENSIÓN REAL VERIFICADA
+      setExportStatusText('Grabando con motor compatible MediaRecorder...');
       const offCanvas = document.createElement('canvas');
       offCanvas.width = res.width;
       offCanvas.height = res.height;
-      const offCtx = offCanvas.getContext('2d')!;
+      const offCtx = offCanvas.getContext('2d', { alpha: false })!;
 
-      const canvasStream = offCanvas.captureStream(fps);
+      const canvasStream = offCanvas.captureStream(effectiveFps);
       const tracks: MediaStreamTrack[] = [...canvasStream.getVideoTracks()];
 
       let recAudioCtx: AudioContext | null = null;
       let recAudioSrc: AudioBufferSourceNode | null = null;
 
       if (audioSourceType !== 'none') {
-        const AudioCtx = window.AudioContext || (window as unknown as { webkitAudioContext: typeof AudioContext }).webkitAudioContext;
+        const AudioCtx =
+          window.AudioContext || (window as unknown as { webkitAudioContext: typeof AudioContext }).webkitAudioContext;
         recAudioCtx = new AudioCtx();
         const dest = recAudioCtx.createMediaStreamDestination();
 
@@ -1400,18 +1656,20 @@ export default function App() {
 
       const combinedStream = new MediaStream(tracks);
       const candidateMimes =
-        exportFormat === 'mp4'
-          ? ['video/mp4;codecs=avc1,mp4a.40.2', 'video/mp4', 'video/webm;codecs=vp9,opus', 'video/webm']
+        effectiveFormat === 'mp4'
+          ? ['video/mp4;codecs=avc1,mp4a.40.2', 'video/mp4', 'video/webm;codecs=vp9,opus', 'video/webm;codecs=vp8,opus', 'video/webm']
           : ['video/webm;codecs=vp9,opus', 'video/webm;codecs=vp8,opus', 'video/webm'];
 
       const chosenMime = candidateMimes.find((m) => MediaRecorder.isTypeSupported(m)) || 'video/webm';
       const isActualMp4 = chosenMime.includes('mp4');
-      const ext = isActualMp4 ? 'mp4' : 'webm';
+      const realExt = isActualMp4 ? 'mp4' : 'webm';
+      const realLabel = isActualMp4 ? 'MP4' : 'WEBM (VP8/VP9 + Opus)';
 
       const recorder = new MediaRecorder(combinedStream, {
         mimeType: chosenMime,
-        videoBitsPerSecond: quality === 'max' ? 9_000_000 : quality === 'high' ? 5_500_000 : 3_000_000
+        videoBitsPerSecond: effectiveQuality === 'max' ? 8_000_000 : effectiveQuality === 'high' ? 4_800_000 : 2_500_000
       });
+      activeRecorderRef.current = recorder;
 
       const chunks: BlobPart[] = [];
       recorder.ondataavailable = (e) => {
@@ -1425,40 +1683,78 @@ export default function App() {
           } catch {}
         }
         if (recAudioCtx) recAudioCtx.close();
+        tracks.forEach((tr) => tr.stop());
+
+        if (cancelExportRef.current) {
+          chunks.length = 0;
+          showToast('Exportación cancelada.', 'info');
+          finalizeAndRelease();
+          return;
+        }
 
         const blob = new Blob(chunks, { type: chosenMime });
+        chunks.length = 0;
+        const elapsedFinal = Number(((performance.now() - exportStartPerf) / 1000).toFixed(1));
         const url = URL.createObjectURL(blob);
-        const fname = `JairRestaura_Evangelista_${res.width}x${res.height}_${durationSec}s.${ext}`;
+        const fname = `JairRestaura_Evangelista_${res.width}x${res.height}_${durationSec}s.${realExt}`;
 
         setExportedBlob(blob);
         setExportedFileName(fname);
         setExportedUrl(url);
         setExportProgress(100);
-        setExportStatusText(`¡Video ${ext.toUpperCase()} listo para descargar!`);
-        showToast(`¡Video ${ext.toUpperCase()} generado correctamente!`, 'success');
-        setIsExporting(false);
+        setExportStatusText(`¡Video ${realExt.toUpperCase()} listo en ${elapsedFinal}s!`);
+        setTelemetry({
+          percent: 100,
+          currentFrame: exactTotalFrames,
+          totalFrames: exactTotalFrames,
+          elapsedSec: elapsedFinal,
+          engineLabel: 'MediaRecorder Local',
+          finalDurationSec: durationSec,
+          fileSizeText: formatFileSize(blob.size),
+          actualFormatLabel: realLabel
+        });
+
+        if (autoDownload) triggerDownload(url, fname);
+        showToast(`¡Video ${realExt.toUpperCase()} exportado con éxito!`, 'success');
+        finalizeAndRelease();
       };
 
-      recorder.start(250);
+      recorder.start(200);
       const startPerf = performance.now();
 
       const recordLoop = (now: number) => {
+        if (cancelExportRef.current) {
+          if (recorder.state !== 'inactive') recorder.stop();
+          return;
+        }
         const elapsedSec = (now - startPerf) / 1000;
         if (elapsedSec >= durationSec) {
           if (recorder.state !== 'inactive') recorder.stop();
           return;
         }
         renderSceneAtTime(offCtx, res.width, res.height, elapsedSec, durationSec);
-        setExportProgress(Math.min(99, Math.round((elapsedSec / durationSec) * 100)));
-        setExportStatusText(`Renderizando video: ${elapsedSec.toFixed(1)}s / ${durationSec}s...`);
+        const pct = Math.min(99, Math.round((elapsedSec / durationSec) * 100));
+        const processedFrames = Math.min(exactTotalFrames, Math.round(elapsedSec * effectiveFps));
+        setExportProgress(pct);
+        setExportStatusText(`Renderizando ${realExt.toUpperCase()}: ${elapsedSec.toFixed(1)}s / ${durationSec}s...`);
+        setTelemetry({
+          percent: pct,
+          currentFrame: processedFrames,
+          totalFrames: exactTotalFrames,
+          elapsedSec: Number(elapsedSec.toFixed(1)),
+          engineLabel: 'MediaRecorder Local',
+          finalDurationSec: durationSec,
+          fileSizeText: '',
+          actualFormatLabel: realLabel
+        });
         requestAnimationFrame(recordLoop);
       };
 
       requestAnimationFrame(recordLoop);
     } catch (err) {
       console.error(err);
-      setIsExporting(false);
-      showToast('Ocurrió un error al exportar. Intenta ajustar la resolución o formato.', 'error');
+      showToast('No se pudo completar la exportación. Intenta con la modalidad RÁPIDA.', 'error');
+      finalizeAndRelease();
     }
   };
 
@@ -1570,20 +1866,20 @@ export default function App() {
 
           {/* Botón rápido de exportación en barra superior */}
           <div className="flex items-center gap-2.5">
-            <span className="hidden md:inline-flex items-center gap-1.5 text-xs text-emerald-400 bg-emerald-500/10 border border-emerald-500/25 px-3 py-1.5 rounded-full">
+            <span className="hidden xl:inline-flex items-center gap-1.5 text-xs text-emerald-400 bg-emerald-500/10 border border-emerald-500/25 px-3 py-1.5 rounded-full">
               <CheckCircle2 className="w-3.5 h-3.5" />
               100% Gratuito • Sin Marcas de Agua
             </span>
             <button
               onClick={() => {
                 setActiveTab('export');
-                handleExport();
+                handleExport({ mode: 'fast', format: 'mp4', autoDownload: true });
               }}
               disabled={isExporting}
-              className="px-4 py-2 rounded-xl bg-gradient-to-r from-amber-500 via-yellow-400 to-amber-500 text-slate-950 font-extrabold text-xs sm:text-sm shadow-lg shadow-amber-500/25 hover:brightness-110 transition flex items-center gap-2 disabled:opacity-50"
+              className="px-4 py-2.5 rounded-xl bg-gradient-to-r from-amber-500 via-yellow-400 to-amber-500 text-slate-950 font-black text-xs sm:text-sm shadow-lg shadow-amber-500/30 hover:brightness-110 transition flex items-center gap-2 disabled:opacity-50"
             >
-              <Download className="w-4 h-4" />
-              <span>Exportar {exportFormat.toUpperCase()}</span>
+              <Zap className="w-4 h-4 fill-current" />
+              <span>⚡ EXPORTACIÓN INSTANTÁNEA</span>
             </button>
           </div>
         </div>
@@ -1685,9 +1981,9 @@ export default function App() {
                   <label className="text-xs font-bold text-slate-300 block">Formato de Pantalla</label>
                   <div className="grid grid-cols-3 gap-2">
                     {[
+                      { res: '720x720' as ResolutionKey, title: 'Cuadrado 1:1', sub: 'Rápido / Feed' },
                       { res: '720x1280' as ResolutionKey, title: 'Vertical 9:16', sub: 'Reels / TikTok' },
-                      { res: '1920x1080' as ResolutionKey, title: 'Horizontal 16:9', sub: 'YouTube / TV' },
-                      { res: '1080x1080' as ResolutionKey, title: 'Cuadrado 1:1', sub: 'Post / Feed' }
+                      { res: '1920x1080' as ResolutionKey, title: 'Horizontal 16:9', sub: 'YouTube / TV' }
                     ].map((fmt) => (
                       <button
                         key={fmt.res}
@@ -1700,8 +1996,7 @@ export default function App() {
                       >
                         <div className="text-xs font-bold">{fmt.title}</div>
                         <div className="text-[10px] opacity-75">{fmt.sub}</div>
-                      </button>
-                    ))}
+                      </button>                    ))}
                   </div>
                 </div>
 
@@ -1995,7 +2290,8 @@ export default function App() {
                       <input
                         type="text"
                         value={selectedLayer.text}
-                        onChange={(e) => updateSelectedLayer({ text: e.target.value })}                        className="w-full bg-slate-900 border border-slate-700 rounded-xl px-3 py-2 text-xs text-white focus:border-amber-400 outline-none"
+                        onChange={(e) => updateSelectedLayer({ text: e.target.value })}
+                        className="w-full bg-slate-900 border border-slate-700 rounded-xl px-3 py-2 text-xs text-white focus:border-amber-400 outline-none"
                         placeholder="Escribe un versículo o mensaje..."
                       />
                     </div>
@@ -2162,52 +2458,55 @@ export default function App() {
                       }`}
                     >
                       <div>
-                        <div className="text-xs font-bold">Ambiente Celestial Instrumental (Integrado)</div>
-                        <div className="text-[10px] opacity-75">
-                          Pad orquestal de adoración generado localmente
-                        </div>
+                        <div className="text-xs font-bold">Ambiente Celestial Instrumental</div>
+                        <div className="text-[10px] opacity-75">Acordes épicos de adoración generados localmente</div>
                       </div>
                       {audioSourceType === 'celestial-synth' && <CheckCircle2 className="w-4 h-4 text-amber-400" />}
                     </button>
 
                     <button
                       onClick={() => setAudioSourceType('none')}
-                      className={`p-2.5 rounded-xl border text-left text-xs transition ${
+                      className={`p-3 rounded-xl border text-left flex items-center justify-between transition ${
                         audioSourceType === 'none'
-                          ? 'border-slate-500 bg-slate-800 text-white font-bold'
+                          ? 'border-amber-400 bg-amber-500/15 text-amber-200'
                           : 'border-slate-800 bg-slate-950/60 text-slate-400'
                       }`}
                     >
-                      Sin Audio (Video Silencioso)
+                      <div>
+                        <div className="text-xs font-bold">Sin Audio (Silencio)</div>
+                        <div className="text-[10px] opacity-75">Exportar únicamente la animación visual</div>
+                      </div>
+                      {audioSourceType === 'none' && <CheckCircle2 className="w-4 h-4 text-amber-400" />}
                     </button>
                   </div>
                 </div>
 
-                {/* Volumen y Punto de Inicio (Recorte) */}
+                {/* Controles de Volumen y Punto de Inicio */}
                 {audioSourceType !== 'none' && (
-                  <div className="bg-slate-950/70 p-4 rounded-xl border border-slate-800 space-y-3">
+                  <div className="bg-slate-950/70 p-4 rounded-xl border border-slate-800/80 space-y-3">
                     <div>
-                      <div className="flex justify-between text-xs mb-1">
-                        <span className="text-slate-300 flex items-center gap-1.5">
-                          <Volume2 className="w-3.5 h-3.5 text-amber-400" /> Volumen de Mezcla
+                      <div className="flex justify-between text-xs text-slate-300 mb-1">
+                        <span className="flex items-center gap-1.5 font-bold">
+                          <Volume2 className="w-3.5 h-3.5 text-amber-400" />
+                          Volumen de Audio
                         </span>
                         <span className="text-amber-400 font-bold">{audioVolume}%</span>
                       </div>
                       <input
                         type="range"
                         min="0"
-                        max="150"
+                        max="100"
                         value={audioVolume}
                         onChange={(e) => setAudioVolume(Number(e.target.value))}
                         className="w-full h-1.5 bg-slate-800 rounded-lg cursor-pointer"
                       />
                     </div>
 
-                    {audioSourceType === 'file' && audioDurationSec > 1 && (
+                    {audioSourceType === 'file' && audioDurationSec > 0 && (
                       <div>
-                        <div className="flex justify-between text-xs mb-1">
-                          <span className="text-slate-300">Punto de Inicio (Recorte)</span>
-                          <span className="text-amber-400 font-bold">{audioStartOffset.toFixed(1)}s</span>
+                        <div className="flex justify-between text-xs text-slate-300 mb-1">
+                          <span className="font-bold">Punto de Inicio del Jingle</span>
+                          <span className="text-sky-300 font-mono">{audioStartOffset.toFixed(1)}s</span>
                         </div>
                         <input
                           type="range"
@@ -2220,45 +2519,83 @@ export default function App() {
                         />
                       </div>
                     )}
-
-                    {userAudioFileRef.current && (
-                      <button
-                        onClick={downloadOriginalAudio}
-                        className="w-full py-2 px-3 rounded-lg bg-slate-900 hover:bg-slate-800 border border-slate-700 text-xs text-slate-200 flex items-center justify-center gap-2"
-                      >
-                        <Download className="w-3.5 h-3.5 text-sky-400" />
-                        Descargar Audio Original
-                      </button>
-                    )}
                   </div>
                 )}
               </div>
             )}
 
-            {/* PESTAÑA 5: EXPORTACIÓN PROFESIONAL MP4 / WEBM / GIF / PNG */}
+            {/* PESTAÑA 5: EXPORTACIÓN PROFESIONAL ULTRARRÁPIDA */}
             {activeTab === 'export' && (
               <div className="space-y-4">
                 <div>
                   <h2 className="text-sm font-bold text-amber-300 uppercase tracking-wider mb-1">
-                    5. Exportación Profesional Local
+                    5. Exportación Ultrarrápida Local
                   </h2>
                   <p className="text-xs text-slate-400">
-                    Codificación directa en tu dispositivo con audio sincronizado y sin marcas de agua.
+                    Aceleración por hardware local en tu dispositivo con audio original sincronizado.
                   </p>
+                </div>
+
+                {/* BOTÓN PRINCIPAL EXPORTACIÓN INSTANTÁNEA */}
+                <button
+                  onClick={() => handleExport({ mode: 'fast', format: 'mp4', autoDownload: true })}
+                  disabled={isExporting}
+                  className="w-full py-3.5 px-4 rounded-xl bg-gradient-to-r from-amber-500 via-yellow-300 to-amber-500 text-slate-950 font-black text-sm shadow-xl shadow-amber-500/30 hover:brightness-110 transition flex items-center justify-center gap-2 disabled:opacity-50"
+                >
+                  <Zap className="w-4 h-4 fill-current" />
+                  <span>⚡ EXPORTACIÓN INSTANTÁNEA (RÁPIDA MP4)</span>
+                </button>
+
+                {/* 3 MODALIDADES AUTOMÁTICAS */}
+                <div className="space-y-2">
+                  <label className="text-xs font-bold text-slate-300 flex items-center gap-1.5">
+                    <Gauge className="w-3.5 h-3.5 text-amber-400" />
+                    Modalidad Automática de Velocidad y Calidad
+                  </label>
+                  <div className="grid grid-cols-1 gap-2">
+                    {(['fast', 'recommended', 'professional'] as ExportPresetMode[]).map((mKey) => {
+                      const m = EXPORT_MODALITIES[mKey];
+                      const active = presetMode === mKey;
+                      return (
+                        <button
+                          key={mKey}
+                          onClick={() => applyPresetMode(mKey)}
+                          disabled={isExporting}
+                          className={`p-3 rounded-xl border text-left transition flex items-center justify-between ${
+                            active
+                              ? 'border-amber-400 bg-amber-500/15 text-amber-100'
+                              : 'border-slate-800 bg-slate-950/60 text-slate-400 hover:border-slate-700'
+                          }`}
+                        >
+                          <div>
+                            <div className="flex items-center gap-2">
+                              <span className="text-xs font-black tracking-wide">{m.title}</span>
+                              <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-amber-500/20 text-amber-300">
+                                {m.badge}
+                              </span>
+                            </div>
+                            <div className="text-[11px] opacity-80 mt-0.5">{m.desc}</div>
+                          </div>
+                          {active && <CheckCircle2 className="w-4 h-4 text-amber-400 shrink-0" />}
+                        </button>
+                      );
+                    })}
+                  </div>
                 </div>
 
                 {/* Formato de Salida */}
                 <div className="grid grid-cols-2 gap-2">
                   {[
                     { id: 'mp4' as ExportFormat, title: 'Video MP4', desc: 'H.264 + AAC (Universal)' },
-                    { id: 'webm' as ExportFormat, title: 'Video WEBM', desc: 'VP9/VP8 + Opus' },
+                    { id: 'webm' as ExportFormat, title: 'Video WEBM', desc: 'VP8/VP9 + Opus' },
                     { id: 'gif' as ExportFormat, title: 'GIF Animado', desc: 'Bucle sin audio' },
                     { id: 'png' as ExportFormat, title: 'Imagen PNG', desc: 'Captura HD actual' }
                   ].map((f) => (
                     <button
                       key={f.id}
                       onClick={() => setExportFormat(f.id)}
-                      className={`p-3 rounded-xl border text-left transition ${
+                      disabled={isExporting}
+                      className={`p-2.5 rounded-xl border text-left transition ${
                         exportFormat === f.id
                           ? 'border-amber-400 bg-amber-500/15 text-amber-200'
                           : 'border-slate-800 bg-slate-950/60 text-slate-400 hover:border-slate-700'
@@ -2272,9 +2609,10 @@ export default function App() {
 
                 {/* Resolución */}
                 <div>
-                  <label className="text-xs font-bold text-slate-300 block mb-1">Resolución</label>
+                  <label className="text-xs font-bold text-slate-300 block mb-1">Resolución de Salida</label>
                   <select
                     value={resolutionKey}
+                    disabled={isExporting}
                     onChange={(e) => setResolutionKey(e.target.value as ResolutionKey)}
                     className="w-full bg-slate-900 border border-slate-700 rounded-xl px-3 py-2 text-xs text-white"
                   >
@@ -2293,6 +2631,7 @@ export default function App() {
                       <label className="text-[11px] text-slate-400 block mb-1">Duración</label>
                       <select
                         value={durationSec}
+                        disabled={isExporting}
                         onChange={(e) => {
                           setDurationSec(Number(e.target.value));
                           timeRef.current = 0;
@@ -2309,6 +2648,7 @@ export default function App() {
                       <label className="text-[11px] text-slate-400 block mb-1">Velocidad</label>
                       <select
                         value={fps}
+                        disabled={isExporting}
                         onChange={(e) => setFps(Number(e.target.value) as 24 | 25 | 30)}
                         className="w-full bg-slate-900 border border-slate-700 rounded-lg px-2 py-2 text-xs text-white"
                       >
@@ -2321,6 +2661,7 @@ export default function App() {
                       <label className="text-[11px] text-slate-400 block mb-1">Calidad</label>
                       <select
                         value={quality}
+                        disabled={isExporting}
                         onChange={(e) => setQuality(e.target.value as ExportQuality)}
                         className="w-full bg-slate-900 border border-slate-700 rounded-lg px-2 py-2 text-xs text-white"
                       >
@@ -2332,61 +2673,88 @@ export default function App() {
                   </div>
                 )}
 
-                {/* Botón Principal de Renderizado */}
-                <button
-                  onClick={handleExport}
-                  disabled={isExporting}
-                  className="w-full py-3.5 px-4 rounded-xl bg-gradient-to-r from-amber-500 via-yellow-400 to-amber-500 text-slate-950 font-black text-sm shadow-xl shadow-amber-500/25 hover:brightness-110 transition flex items-center justify-center gap-2 disabled:opacity-50"
-                >
-                  {isExporting ? (
-                    <>
-                      <RefreshCw className="w-4 h-4 animate-spin" />
-                      <span>Procesando ({exportProgress}%)...</span>
-                    </>
-                  ) : (
-                    <>
-                      <Wand2 className="w-4 h-4" />
-                      <span>Generar y Exportar {exportFormat.toUpperCase()}</span>
-                    </>
-                  )}
-                </button>
+                {/* Botón Personalizado de Exportación o Cancelación */}
+                {!isExporting ? (
+                  <button
+                    onClick={() => handleExport({ autoDownload: false })}
+                    className="w-full py-3 px-4 rounded-xl bg-slate-800 hover:bg-slate-700 border border-amber-500/40 text-amber-200 font-extrabold text-xs transition flex items-center justify-center gap-2"
+                  >
+                    <Wand2 className="w-4 h-4 text-amber-400" />
+                    <span>
+                      Exportar {exportFormat.toUpperCase()} ({Math.round(durationSec * fps)} fotogramas exactos)
+                    </span>
+                  </button>
+                ) : (
+                  <button
+                    onClick={handleCancelExport}
+                    className="w-full py-3 px-4 rounded-xl bg-red-600 hover:bg-red-500 text-white font-black text-xs shadow-lg shadow-red-600/30 transition flex items-center justify-center gap-2"
+                  >
+                    <XCircle className="w-4 h-4" />
+                    <span>CANCELAR EXPORTACIÓN</span>
+                  </button>
+                )}
 
-                {/* Barra de Progreso */}
+                {/* Telemetría y Barra de Progreso Real */}
                 {isExporting && (
-                  <div className="bg-slate-950 p-3 rounded-xl border border-amber-500/30 space-y-1.5">
-                    <div className="flex justify-between text-[11px]">
-                      <span className="text-amber-300 font-semibold">{exportStatusText}</span>
-                      <span className="text-white font-bold">{exportProgress}%</span>
+                  <div className="bg-slate-950 p-3.5 rounded-xl border border-amber-500/40 space-y-2">
+                    <div className="flex justify-between items-center text-[11px]">
+                      <span className="text-amber-300 font-bold truncate pr-2">{exportStatusText}</span>
+                      <span className="text-white font-black">{exportProgress}%</span>
                     </div>
-                    <div className="w-full h-2 bg-slate-800 rounded-full overflow-hidden">
+                    <div className="w-full h-2.5 bg-slate-800 rounded-full overflow-hidden">
                       <div
-                        className="h-full bg-gradient-to-r from-amber-500 to-yellow-300 transition-all duration-150"
+                        className="h-full bg-gradient-to-r from-amber-500 via-yellow-300 to-amber-400 transition-all duration-100"
                         style={{ width: `${exportProgress}%` }}
                       />
+                    </div>
+                    <div className="grid grid-cols-3 gap-1 pt-1 text-[10px] text-slate-400 font-mono">
+                      <div>
+                        Frames: <span className="text-slate-200">{telemetry.currentFrame}/{telemetry.totalFrames}</span>
+                      </div>
+                      <div className="text-center">
+                        Tiempo: <span className="text-amber-300">{telemetry.elapsedSec.toFixed(1)}s</span>
+                      </div>
+                      <div className="text-right truncate">{telemetry.engineLabel}</div>
                     </div>
                   </div>
                 )}
 
-                {/* Resultado Listo para Descargar y Compartir */}
+                {/* Resultado Listo con Detalles Técnicos, Botón Descargar y Compartir */}
                 {exportedUrl && !isExporting && (
-                  <div className="bg-emerald-950/30 border border-emerald-500/40 rounded-xl p-3.5 space-y-2.5">
+                  <div className="bg-emerald-950/35 border border-emerald-500/40 rounded-xl p-3.5 space-y-3">
                     <div className="flex items-center gap-2 text-xs font-bold text-emerald-300">
                       <CheckCircle2 className="w-4 h-4 shrink-0" />
                       <span className="truncate">{exportedFileName}</span>
                     </div>
+
+                    <div className="grid grid-cols-3 gap-2 text-[10px] bg-slate-950/70 p-2 rounded-lg border border-emerald-500/20 text-slate-300">
+                      <div>
+                        <span className="text-slate-500 block">Duración Final</span>
+                        <span className="font-bold text-white">{telemetry.finalDurationSec}s ({telemetry.totalFrames} f)</span>
+                      </div>
+                      <div>
+                        <span className="text-slate-500 block">Tamaño Archivo</span>
+                        <span className="font-bold text-emerald-300">{telemetry.fileSizeText}</span>
+                      </div>
+                      <div>
+                        <span className="text-slate-500 block">Tiempo Render</span>
+                        <span className="font-bold text-amber-300">{telemetry.elapsedSec}s</span>
+                      </div>
+                    </div>
+
                     <div className="grid grid-cols-2 gap-2">
                       <a
                         href={exportedUrl}
                         download={exportedFileName}
-                        className="py-2.5 px-3 rounded-lg bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-extrabold text-xs flex items-center justify-center gap-1.5 transition"
+                        className="py-2.5 px-3 rounded-lg bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-black text-xs flex items-center justify-center gap-1.5 transition"
                       >
-                        <Download className="w-3.5 h-3.5" /> Descargar
+                        <Download className="w-3.5 h-3.5" /> DESCARGAR VIDEO
                       </a>
                       <button
                         onClick={handleShare}
-                        className="py-2.5 px-3 rounded-lg bg-sky-500 hover:bg-sky-400 text-slate-950 font-extrabold text-xs flex items-center justify-center gap-1.5 transition"
+                        className="py-2.5 px-3 rounded-lg bg-sky-500 hover:bg-sky-400 text-slate-950 font-black text-xs flex items-center justify-center gap-1.5 transition"
                       >
-                        <Share2 className="w-3.5 h-3.5" /> Compartir
+                        <Share2 className="w-3.5 h-3.5" /> COMPARTIR
                       </button>
                     </div>
                   </div>
@@ -2485,24 +2853,10 @@ export default function App() {
 
           <div className="space-y-2.5 text-xs">
             <div className="p-3 rounded-xl bg-slate-950/70 border border-slate-800/80 flex justify-between items-center">
-              <span className="text-slate-400">Formato</span>
-              <span className="font-bold text-white">{RESOLUTIONS[resolutionKey].aspect} ({resolutionKey})</span>
-            </div>
-            <div className="p-3 rounded-xl bg-slate-950/70 border border-slate-800/80 flex justify-between items-center">
-              <span className="text-slate-400">Duración</span>
-              <div className="flex gap-1">
-                {[10, 15, 20, 30].map((d) => (
-                  <button
-                    key={d}
-                    onClick={() => setDurationSec(d)}
-                    className={`px-2 py-0.5 rounded text-[11px] font-bold transition ${
-                      durationSec === d ? 'bg-amber-500 text-slate-950' : 'bg-slate-800 text-slate-300'
-                    }`}
-                  >
-                    {d}s
-                  </button>
-                ))}
-              </div>
+              <span className="text-slate-400">Fotogramas Exactos</span>
+              <span className="font-bold text-amber-300">
+                {Math.round(durationSec * fps)} frames ({fps} FPS)
+              </span>
             </div>
             <div className="p-3 rounded-xl bg-slate-950/70 border border-slate-800/80 flex justify-between items-center">
               <span className="text-slate-400">Audio</span>
@@ -2524,23 +2878,22 @@ export default function App() {
           <div className="space-y-2.5 pt-2 border-t border-slate-800">
             <button
               onClick={() => {
-                setExportFormat('mp4');
                 setActiveTab('export');
-                handleExport();
+                handleExport({ mode: 'fast', format: 'mp4', autoDownload: true });
               }}
               disabled={isExporting}
-              className="w-full py-3 px-4 rounded-xl bg-gradient-to-r from-amber-500 via-yellow-400 to-amber-500 text-slate-950 font-extrabold text-xs shadow-lg shadow-amber-500/20 hover:brightness-110 transition flex items-center justify-center gap-2 disabled:opacity-50"
+              className="w-full py-3.5 px-4 rounded-xl bg-gradient-to-r from-amber-500 via-yellow-400 to-amber-500 text-slate-950 font-black text-xs shadow-lg shadow-amber-500/25 hover:brightness-110 transition flex items-center justify-center gap-2 disabled:opacity-50"
             >
-              <Film className="w-4 h-4" />
-              <span>Descargar Video MP4 Real</span>
+              <Zap className="w-4 h-4 fill-current" />
+              <span>⚡ EXPORTACIÓN INSTANTÁNEA</span>
             </button>
 
             <button
               onClick={() => {
-                setExportFormat('png');
-                handleExport();
+                handleExport({ format: 'png' });
               }}
-              className="w-full py-2.5 px-4 rounded-xl bg-slate-900 hover:bg-slate-800 border border-slate-700 text-slate-200 font-bold text-xs transition flex items-center justify-center gap-2"
+              disabled={isExporting}
+              className="w-full py-2.5 px-4 rounded-xl bg-slate-900 hover:bg-slate-800 border border-slate-700 text-slate-200 font-bold text-xs transition flex items-center justify-center gap-2 disabled:opacity-50"
             >
               <FileImage className="w-4 h-4 text-amber-400" />
               <span>Capturar Fotograma PNG</span>
