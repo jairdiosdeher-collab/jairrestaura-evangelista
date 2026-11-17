@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useState } from 'react';
+import Animador from './Animador';
 import BibleSchoolView from './components/BibleSchoolView';
 import DiscipleshipView from './components/DiscipleshipView';
 import EvangelistChatView from './components/EvangelistChatView';
@@ -113,6 +114,11 @@ export default function App() {
   const handleOpenSchoolTab = (tab: 'escuela' | 'biblioteca') => {
     navigateTo('escuela', tab);
   };
+
+  // La ruta /animador abre el estudio de exportación rápida sin reemplazar la plataforma principal.
+  if (typeof window !== 'undefined' && window.location.pathname.replace(/\/+$/, '').toLowerCase() === '/animador') {
+    return <Animador />;
+  }
 
   return (
     <div className="min-h-screen flex flex-col bg-[var(--bg-page)] text-[var(--text-primary)] transition-colors duration-150">
