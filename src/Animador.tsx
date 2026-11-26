@@ -2593,7 +2593,7 @@ export default function App() {
                   ].map((f) => (
                     <button
                       key={f.id}
-                      onClick={() => setExportFormat(f.id)}
+                      onClick={() => { setExportFormat(f.id); if (f.id === 'gif' && durationSec > 30) setDurationSec(30); }}
                       disabled={isExporting}
                       className={`p-2.5 rounded-xl border text-left transition ${
                         exportFormat === f.id
@@ -2628,7 +2628,7 @@ export default function App() {
                 {exportFormat !== 'png' && (
                   <div className="grid grid-cols-3 gap-2">
                     <div>
-                      <label className="text-[11px] text-slate-400 block mb-1">Duración</label>
+                      <label className="text-[11px] text-slate-400 block mb-1">Duración (máx. 3 min)</label>
                       <select
                         value={durationSec}
                         disabled={isExporting}
@@ -2642,6 +2642,16 @@ export default function App() {
                         <option value={15}>15 seg</option>
                         <option value={20}>20 seg</option>
                         <option value={30}>30 seg</option>
+                        {exportFormat !== 'gif' && (
+                          <>
+                            <option value={45}>45 seg</option>
+                            <option value={60}>1 min</option>
+                            <option value={90}>1 min 30 seg</option>
+                            <option value={120}>2 min</option>
+                            <option value={150}>2 min 30 seg</option>
+                            <option value={180}>3 min (máximo)</option>
+                          </>
+                        )}
                       </select>
                     </div>
                     <div>
